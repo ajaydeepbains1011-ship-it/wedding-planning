@@ -278,6 +278,76 @@ const GLOBAL_CSS = `
   select { cursor: pointer; }
   a { text-decoration: none; }
   textarea { resize: vertical; }
+  /* ═══════════════════════════════════
+     MOBILE RESPONSIVE
+  ═══════════════════════════════════ */
+
+  /* Nav bar wrapping */
+  @media (max-width: 768px) {
+    /* Stack nav bar vertically */
+    .nav-desktop-row { flex-direction: column !important; gap: 8px !important; align-items: flex-start !important; }
+
+    /* Hero strip shorter on mobile */
+    .hero-strip { height: 200px !important; }
+    .hero-strip .filmroll-inner img { height: 200px !important; }
+    .hero-strip-content { padding: 0 16px !important; }
+    .hero-stat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+    .hero-title { font-size: 20px !important; }
+    .hero-subtitle { display: none !important; }
+
+    /* Main content padding */
+    .main-content { padding: 16px 14px 80px !important; }
+
+    /* Stat cards 2-col on mobile */
+    .stat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+
+    /* Event timeline stack */
+    .event-row { grid-template-columns: auto 1fr !important; gap: 10px !important; padding: 12px 14px !important; }
+
+    /* Vendor table scroll */
+    .vendor-scroll { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; }
+
+    /* Guest grid */
+    .guest-row { grid-template-columns: 1fr auto !important; gap: 8px !important; }
+    .guest-cols-hide { display: none !important; }
+
+    /* Kanban single column */
+    .kanban-grid { grid-template-columns: 1fr !important; }
+
+    /* Budget grid */
+    .budget-stat-row { grid-template-columns: repeat(2, 1fr) !important; }
+
+    /* Payment rows */
+    .payment-table { font-size: 11px !important; }
+
+    /* Notes input */
+    .notes-input-row { flex-direction: column !important; }
+
+    /* Hide countdowns on very small screens */
+    .countdown-row { display: none !important; }
+
+    /* Tabs scroll */
+    .nav-tabs-row { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; }
+    .nav-tabs-row::-webkit-scrollbar { display: none !important; }
+
+    /* Login screen stack on mobile */
+    .login-photo-panel { display: none !important; }
+    .login-right-panel { padding: 32px 20px !important; }
+  }
+
+  @media (max-width: 480px) {
+    .hero-stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .stat-card { padding: 14px 12px !important; border-radius: 14px !important; }
+    .hero-strip { height: 160px !important; }
+    .hero-strip .filmroll-inner img { height: 160px !important; }
+    .hero-stat-grid > div { padding: 10px 12px !important; }
+    .hero-stat-value { font-size: 15px !important; }
+  }
+
+  /* Smooth touch scrolling everywhere */
+  * { -webkit-overflow-scrolling: touch; }
+
 `;
 
 if (typeof document !== 'undefined' && !document.getElementById('wp-styles')) {
@@ -600,7 +670,7 @@ function LoginScreen({ nameInput, setNameInput, setUserName }: any) {
       <div style={{ position:"absolute", top:"30%", right:"-5%", width:400, height:400, borderRadius:"50%", background:"radial-gradient(circle, rgba(14,165,233,0.14) 0%, transparent 70%)", zIndex:0, filter:"blur(40px)" }}/>
 
       {/* ── Left panel: photo carousel ── */}
-      <div style={{ flex:"0 0 48%", position:"relative", overflow:"hidden", zIndex:1, margin:"24px 0 24px 24px", borderRadius:24, boxShadow:"0 24px 80px rgba(79,70,229,0.20)" }}>
+      <div style={{ className:"login-photo-panel", style:{{flex:"0 0 48%", position:"relative", overflow:"hidden", zIndex:1, margin:"24px 0 24px 24px", borderRadius:24, boxShadow:"0 24px 80px rgba(79,70,229,0.20)"}} }}>
         {PHOTO_LIST.map((src, i) => (
           <div key={i} style={{
             position:"absolute", inset:0,
@@ -639,7 +709,7 @@ function LoginScreen({ nameInput, setNameInput, setUserName }: any) {
       </div>
 
       {/* ── Right panel: login ── */}
-      <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"48px 40px", zIndex:1, position:"relative" }}>
+      <div className="login-right-panel" style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"48px 40px", zIndex:1, position:"relative" }}>
         <div className="fade-up" style={{ maxWidth:380, width:"100%" }}>
 
           {/* Header */}
@@ -649,7 +719,7 @@ function LoginScreen({ nameInput, setNameInput, setUserName }: any) {
               <span style={{ fontSize:11, fontWeight:700, color:"#4F46E5", letterSpacing:0.5, textTransform:"uppercase" }}>Spring 2027 · Portugal</span>
             </div>
             <h1 style={{ margin:"0 0 10px", fontSize:38, fontWeight:800, letterSpacing:-1.5, lineHeight:1.05, background:"linear-gradient(135deg,#0f0f1a 0%,#4F46E5 60%,#7C3AED 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
-              Our wedding,<br/>perfectly planned.
+              Your wedding,<br/>perfectly planned.
             </h1>
             <p style={{ color:"#8888aa", fontSize:14, margin:0, lineHeight:1.65, fontWeight:400 }}>
               Budget, vendors, guests, timelines — all in one place for the whole family.
@@ -1112,7 +1182,7 @@ export default function WeddingPlanner() {
           </div>
 
           {/* Event countdowns — center */}
-          <div style={{display:"flex",gap:20,flexWrap:"wrap",alignItems:"center"}}>
+          <div className="countdown-row" style={{display:"flex",gap:20,flexWrap:"wrap",alignItems:"center"}}>
             {events.map(e=>(
               <div key={e.id} style={{textAlign:"center"}}>
                 <div style={{fontSize:9,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.8}}>{e.label.split(" ")[0]}</div>
@@ -1137,7 +1207,7 @@ export default function WeddingPlanner() {
         </div>
 
         {/* Nav tabs */}
-        <div style={{display:"flex",gap:0,overflowX:"auto",maxWidth:1240,margin:"6px auto 0"}}>
+        <div className="nav-tabs-row" style={{display:"flex",gap:0,overflowX:"auto",maxWidth:1240,margin:"6px auto 0"}}>
           {TABS.map(t=>(
             <button key={t.id} onClick={()=>setTab(t.id)} className={`nav-tab${tab===t.id?" active":""}`}>
               {t.label}
@@ -1148,7 +1218,7 @@ export default function WeddingPlanner() {
 
       {/* ── CINEMATIC HERO STRIP (overview only) ── */}
       {tab==="overview" && (
-        <div style={{position:"relative",height:300,overflow:"hidden",background:"#0f0f1a"}}>
+        <div className="hero-strip" style={{ style={{position:"relative",height:300,overflow:"hidden",background:"#0f0f1a"}}}}>
           {/* Keyframes injected inline */}
           <style>{`
             @keyframes filmroll {
@@ -1186,12 +1256,12 @@ export default function WeddingPlanner() {
 
           {/* Overlaid stat cards */}
           <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 28px"}}>
-            <div style={{width:"100%",maxWidth:1240}}>
+            <div style={{width:"100%",maxWidth:1240}} className="hero-strip-content">
               {/* Title row */}
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:16}}>
                 <div>
                   <div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.6)",textTransform:"uppercase",letterSpacing:2,marginBottom:4}}>Wedding Dashboard</div>
-                  <div style={{fontSize:28,fontWeight:800,color:"#ffffff",letterSpacing:-1,lineHeight:1,textShadow:"0 2px 20px rgba(0,0,0,0.4)"}}>Ajay & Bianca 💍</div>
+                  <div className="hero-title" style={{fontSize:28,fontWeight:800,color:"#ffffff",letterSpacing:-1,lineHeight:1,textShadow:"0 2px 20px rgba(0,0,0,0.4)"}}>Ajay & Bianca 💍</div>
                 </div>
                 <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",fontWeight:500,textAlign:"right"}}>
                   Portugal · Spring 2027<br/>
@@ -1200,12 +1270,12 @@ export default function WeddingPlanner() {
               </div>
 
               {/* Stat pills */}
-              <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:10}}>
+              <div className="hero-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:10}}>
                 {[
                   {label:"Total Budget",   value:"$500,000",          sub:"overall target",          accent:"rgba(255,255,255,0.9)"},
                   {label:"Total Paid (€)", value:fmtEUR(totalPaidEur),sub:fmtUSD(totalPaidUsd)+" USD",accent:"#FCD34D"},
-                  {label:"Ajay's Family",  value:fmtEUR(ajayPaidEur), sub:fmtUSD(eurToUsd(ajayPaidEur,eurRate))+" USD",accent:"#60A5FA"},
-                  {label:"Bianca's Family",value:fmtEUR(biancaPaidEur),sub:fmtUSD(eurToUsd(biancaPaidEur,eurRate))+" USD",accent:"#C084FC"},
+                  {label:"Bains Family",  value:fmtEUR(ajayPaidEur), sub:fmtUSD(eurToUsd(ajayPaidEur,eurRate))+" USD",accent:"#60A5FA"},
+                  {label:"Natt Family",value:fmtEUR(biancaPaidEur),sub:fmtUSD(eurToUsd(biancaPaidEur,eurRate))+" USD",accent:"#C084FC"},
                   {label:"Tasks Left",     value:tasksLeft,            sub:"open kanban items",       accent:"#34D399"},
                   {label:"Checklist",      value:`${checkDone}/${checkTotal}`,sub:"items complete",  accent:"#FB923C"},
                 ].map(c=>(
@@ -1219,7 +1289,7 @@ export default function WeddingPlanner() {
                     transition:"transform 0.2s, background 0.2s",
                   }}>
                     <div style={{fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:0.8,marginBottom:6}}>{c.label}</div>
-                    <div style={{fontSize:20,fontWeight:800,color:c.accent,letterSpacing:-0.5,lineHeight:1}}>{c.value}</div>
+                    <div className="hero-stat-value" className="hero-stat-value" style={{fontSize:20,fontWeight:800,color:c.accent,letterSpacing:-0.5,lineHeight:1}}>{c.value}</div>
                     <div style={{fontSize:10,color:"rgba(255,255,255,0.45)",marginTop:4,fontWeight:500}}>{c.sub}</div>
                   </div>
                 ))}
@@ -1229,7 +1299,7 @@ export default function WeddingPlanner() {
         </div>
       )}
 
-      <div style={{padding:"28px 28px 80px",maxWidth:1240,margin:"0 auto"}}>
+      <div className="main-content" style={{padding:"28px 28px 80px",maxWidth:1240,margin:"0 auto"}}>
 
         {/* ══ OVERVIEW ══ */}
         {tab==="overview" && (
@@ -1302,8 +1372,8 @@ export default function WeddingPlanner() {
               {[
                 {label:"Total Paid (EUR)",  val:fmtEUR(totalPaidEur),              col:"#F59E0B"},
                 {label:"Total Paid (USD)",  val:fmtUSD(totalPaidUsd),              col:"#0f0f1a"},
-                {label:"Ajay's Family",     val:fmtEUR(ajayPaidEur),               col:"#1D4ED8", sub:fmtUSD(eurToUsd(ajayPaidEur,eurRate))},
-                {label:"Bianca's Family",   val:fmtEUR(biancaPaidEur),             col:"#7C3AED", sub:fmtUSD(eurToUsd(biancaPaidEur,eurRate))},
+                {label:"Bains Family",     val:fmtEUR(ajayPaidEur),               col:"#1D4ED8", sub:fmtUSD(eurToUsd(ajayPaidEur,eurRate))},
+                {label:"Natt Family",   val:fmtEUR(biancaPaidEur),             col:"#7C3AED", sub:fmtUSD(eurToUsd(biancaPaidEur,eurRate))},
                 {label:"Budget Remaining",  val:"$"+((500000-totalPaidUsd)|0).toLocaleString(), col: totalPaidUsd>500000?"#EF4444":"#10B981"},
               ].map(s=>(
                 <div key={s.label} className="card" style={{padding:"14px 18px"}}>
@@ -1493,7 +1563,7 @@ export default function WeddingPlanner() {
               <h2 style={{margin:0,fontSize:11,letterSpacing:3,color:"#111827",textTransform:"uppercase",fontWeight:400}}>Vendor Tracker</h2>
               <button onClick={addVendor} className="primary-btn">+ Add Vendor →</button>
             </div>
-            <div style={{overflowX:"auto"}}>
+            <div className="vendor-scroll" style={{overflowX:"auto"}}>
               <table className="vendor-table" style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
                 <thead>
                   <tr style={{borderBottom:"2px solid #e8e8ec",background:"#f6f6f7"}}>
@@ -1567,7 +1637,7 @@ export default function WeddingPlanner() {
         {tab==="kanban" && (
           <div>
             <div style={{fontSize:12,color:"#4a4a6a",marginBottom:18,fontWeight:500,display:"flex",alignItems:"center",gap:16}}><span>🖱️ Drag to move tasks</span><span>✏️ Click title to edit</span><span style={{marginLeft:"auto",fontWeight:700,color:"#4F46E5"}}>{kanban.done.length}/{Object.values(kanban).flat().length} complete</span></div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
+            <div className="kanban-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
               {[{key:"todo",label:"📋 To Do",color:"#EF4444"},{key:"inprogress",label:"⚙️ In Progress",color:"#F59E0B"},{key:"done",label:"✅ Done",color:"#10B981"}].map(col=>(
                 <div key={col.key} onDragOver={e=>e.preventDefault()} onDrop={()=>onDrop(col.key)} style={{background:"#ffffff",borderRadius:12,border:`1px solid ${col.color}33`,minHeight:180}}>
                   <div style={{padding:"10px 12px",borderBottom:`2px solid ${col.color}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
