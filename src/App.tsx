@@ -14,50 +14,62 @@ const PHOTO_LIST = [PHOTOS.p1, PHOTOS.p2, PHOTOS.p3, PHOTOS.p4, PHOTOS.p5, PHOTO
 
 // ── Global styles & animations ──
 const GLOBAL_CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
-  *, *::before, *::after { box-sizing: border-box; }
-  body { margin: 0; font-family: 'DM Sans', -apple-system, sans-serif; background: #f6f6f7; }
-  input, select, textarea, button { font-family: 'DM Sans', -apple-system, sans-serif; }
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Mono:wght@400;500&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; background: #f4f4f8; color: #0f0f1a; }
+  input, select, textarea, button { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; }
+
+  :root {
+    --a1: #4F46E5;
+    --a2: #7C3AED;
+    --a3: #0EA5E9;
+    --a4: #06B6D4;
+    --grad: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #0EA5E9 100%);
+    --grad-soft: linear-gradient(135deg, rgba(79,70,229,0.08) 0%, rgba(124,58,237,0.06) 50%, rgba(14,165,233,0.08) 100%);
+    --grad-hero: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 40%, #e0f2fe 100%);
+    --surface: #ffffff;
+    --surface-2: #f9f9fc;
+    --surface-3: #f1f1f6;
+    --border: #e4e4ef;
+    --border-strong: #c8c8e0;
+    --text-1: #0f0f1a;
+    --text-2: #4a4a6a;
+    --text-3: #8888aa;
+    --green: #059669;
+    --amber: #d97706;
+    --red: #dc2626;
+    --shadow-sm: 0 1px 3px rgba(79,70,229,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(79,70,229,0.10), 0 2px 6px rgba(0,0,0,0.05);
+    --shadow-lg: 0 12px 40px rgba(79,70,229,0.14), 0 4px 12px rgba(0,0,0,0.06);
+  }
 
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
+    from { opacity: 0; transform: translateY(18px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
-  @keyframes slideRight {
-    from { opacity: 0; transform: translateX(-16px); }
-    to   { opacity: 1; transform: translateX(0); }
-  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes scaleIn {
-    from { opacity: 0; transform: scale(0.95); }
+    from { opacity: 0; transform: scale(0.96); }
     to   { opacity: 1; transform: scale(1); }
   }
-  @keyframes photoSlide {
-    0%   { opacity: 0; transform: scale(1.04); }
-    8%   { opacity: 1; transform: scale(1); }
-    88%  { opacity: 1; transform: scale(1); }
-    96%  { opacity: 0; transform: scale(0.97); }
-    100% { opacity: 0; transform: scale(0.97); }
-  }
-  @keyframes progressFill {
-    from { width: 0; }
+  @keyframes progressFill { from { width: 0; } }
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
   }
   @keyframes float {
     0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-6px); }
+    50% { transform: translateY(-5px); }
   }
-  @keyframes heartbeat {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.12); }
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgba(79,70,229,0.3); }
+    70% { box-shadow: 0 0 0 8px rgba(79,70,229,0); }
+    100% { box-shadow: 0 0 0 0 rgba(79,70,229,0); }
   }
 
-  .fade-up { animation: fadeUp 0.45s cubic-bezier(0.4,0,0.2,1) both; }
+  .fade-up { animation: fadeUp 0.4s cubic-bezier(0.4,0,0.2,1) both; }
   .fade-in { animation: fadeIn 0.3s ease both; }
   .scale-in { animation: scaleIn 0.3s cubic-bezier(0.4,0,0.2,1) both; }
-
   .stagger-1 { animation-delay: 0.05s; }
   .stagger-2 { animation-delay: 0.10s; }
   .stagger-3 { animation-delay: 0.15s; }
@@ -65,443 +77,204 @@ const GLOBAL_CSS = `
   .stagger-5 { animation-delay: 0.25s; }
   .stagger-6 { animation-delay: 0.30s; }
 
-  .photo-slide {
-    position: absolute; inset: 0;
-    background-size: cover; background-position: center;
-    animation: photoSlide 6s ease-in-out both;
-  }
-
+  /* ── STAT CARDS ── */
   .stat-card {
-    background: #ffffff;
-    border: 1px solid #f0f0f0;
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 20px;
     padding: 22px 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  .stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 32px rgba(0,0,0,0.09);
-  }
-
-  .nav-tab {
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid transparent;
-    padding: 12px 16px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    color: #9ca3af;
-    white-space: nowrap;
-    transition: color 0.2s ease, border-color 0.2s ease;
-    letter-spacing: -0.1px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     position: relative;
+    overflow: hidden;
   }
-  .nav-tab:hover { color: #111827; }
-  .nav-tab.active { color: #111827; border-bottom-color: #111827; font-weight: 600; }
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--grad-soft);
+    opacity: 0;
+    transition: opacity 0.2s;
+    border-radius: 20px;
+  }
+  .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: rgba(79,70,229,0.3); }
+  .stat-card:hover::after { opacity: 1; }
 
-  .primary-btn {
-    background: #111827;
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    padding: 10px 20px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  /* ── NAV TABS ── */
+  .nav-tab {
+    background: transparent; border: none;
+    border-bottom: 2px solid transparent;
+    padding: 11px 16px; cursor: pointer;
+    font-size: 13px; font-weight: 500;
+    color: var(--text-3); white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     letter-spacing: -0.1px;
   }
-  .primary-btn:hover { background: #1f2937; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+  .nav-tab:hover { color: var(--text-1); }
+  .nav-tab.active {
+    color: var(--a1);
+    border-bottom-color: var(--a1);
+    font-weight: 700;
+  }
+
+  /* ── BUTTONS ── */
+  .primary-btn {
+    background: var(--grad);
+    color: #fff; border: none;
+    border-radius: 10px;
+    padding: 9px 18px;
+    font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+    box-shadow: 0 4px 14px rgba(79,70,229,0.35);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: -0.1px;
+    background-size: 200% auto;
+  }
+  .primary-btn:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(79,70,229,0.4); }
   .primary-btn:active { transform: translateY(0); }
 
   .ghost-btn {
-    background: transparent;
-    color: #6b7280;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 8px 16px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s ease;
+    background: transparent; color: var(--text-2);
+    border: 1px solid var(--border);
+    border-radius: 9px; padding: 7px 14px;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
   }
-  .ghost-btn:hover { border-color: #111827; color: #111827; }
+  .ghost-btn:hover { border-color: var(--a1); color: var(--a1); background: rgba(79,70,229,0.05); }
 
-  .pill-active {
-    background: #111827 !important;
-    color: #fff !important;
-    border-color: #111827 !important;
-  }
-
+  /* ── CARDS ── */
   .card {
-    background: #ffffff;
-    border: 1px solid #f0f0f0;
-    border-radius: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    transition: box-shadow 0.25s ease;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s, border-color 0.2s;
   }
-  .card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.08); }
+  .card:hover { box-shadow: var(--shadow-md); }
 
+  /* ── EVENT ROWS ── */
   .event-row {
-    background: #ffffff;
-    border: 1px solid #f0f0f0;
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 16px;
     padding: 16px 20px;
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: 16px;
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
   }
-  .event-row:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); transform: translateX(3px); }
-
-  .kanban-col {
-    background: #f9fafb;
-    border-radius: 16px;
-    border: 1px solid #f0f0f0;
-    min-height: 200px;
+  .event-row:hover {
+    border-color: rgba(79,70,229,0.35);
+    box-shadow: var(--shadow-md);
+    transform: translateX(5px);
+    background: linear-gradient(135deg, #fff 80%, rgba(79,70,229,0.02) 100%);
   }
 
+  /* ── KANBAN ── */
   .kanban-card {
-    background: #ffffff;
-    border: 1px solid #f0f0f0;
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 12px;
     padding: 11px 13px;
-    cursor: grab;
-    user-select: none;
+    cursor: grab; user-select: none;
     position: relative;
-    transition: box-shadow 0.2s ease, transform 0.15s ease;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: box-shadow 0.2s, transform 0.15s, border-color 0.2s;
+    box-shadow: var(--shadow-sm);
   }
-  .kanban-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.10); transform: translateY(-2px); }
+  .kanban-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: rgba(79,70,229,0.25); }
 
+  /* ── CHECKLIST ── */
   .check-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 8px 8px;
+    display: flex; align-items: flex-start;
+    gap: 10px; padding: 9px 8px;
     border-radius: 10px;
-    transition: background 0.15s ease;
-    cursor: pointer;
+    transition: background 0.12s; cursor: pointer;
   }
-  .check-row:hover { background: #f9fafb; }
+  .check-row:hover { background: rgba(79,70,229,0.05); }
 
-  .vendor-row { transition: background 0.15s; }
-  .vendor-row:hover { background: #f0f4ff !important; }
-
-  /* Modern tech palette */
-  :root {
-    --accent: #5B5BD6;
-    --accent-light: #EEF0FF;
-    --accent-mid: #8B8FE8;
-    --surface: #ffffff;
-    --surface-2: #f6f6f7;
-    --surface-3: #efefef;
-    --border: #e8e8ec;
-    --border-strong: #d4d4db;
-    --text-1: #1a1a2e;
-    --text-2: #4e4e6a;
-    --text-3: #8f8fa8;
-    --green: #16a34a;
-    --amber: #d97706;
-    --red: #dc2626;
-  }
-
-  /* Refined stat cards */
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 20px 18px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
-    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-    position: relative;
-    overflow: hidden;
-  }
-  .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--accent), var(--accent-mid));
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(91,91,214,0.1); border-color: var(--accent-mid); }
-  .stat-card:hover::before { opacity: 1; }
-
-  /* Nav tabs */
-  .nav-tab {
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid transparent;
-    padding: 10px 14px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-3);
-    white-space: nowrap;
-    transition: color 0.15s, border-color 0.15s;
-    font-family: 'DM Sans', sans-serif;
-    letter-spacing: -0.1px;
-  }
-  .nav-tab:hover { color: var(--text-1); }
-  .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
-
-  /* Buttons */
-  .primary-btn {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    padding: 9px 18px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
-    box-shadow: 0 2px 8px rgba(91,91,214,0.25);
-    font-family: 'DM Sans', sans-serif;
-    letter-spacing: -0.1px;
-  }
-  .primary-btn:hover { background: #4a4ab8; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(91,91,214,0.3); }
-  .primary-btn:active { transform: translateY(0); }
-
-  .ghost-btn {
-    background: transparent;
-    color: var(--text-2);
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    padding: 7px 14px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .ghost-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
-
-  /* Cards */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    transition: box-shadow 0.2s;
-  }
-  .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
-
-  /* Event rows */
-  .event-row {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 14px 18px;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 14px;
-    transition: box-shadow 0.18s, border-color 0.18s, transform 0.18s;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-  }
-  .event-row:hover { box-shadow: 0 4px 16px rgba(91,91,214,0.08); border-color: var(--accent-mid); transform: translateX(4px); }
-
-  /* Kanban */
-  .kanban-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 12px;
-    cursor: grab;
-    user-select: none;
-    position: relative;
-    transition: box-shadow 0.18s, transform 0.15s;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-  }
-  .kanban-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.09); transform: translateY(-2px); }
-
-  /* Check rows */
-  .check-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 8px 6px;
-    border-radius: 8px;
-    transition: background 0.12s;
-    cursor: pointer;
-  }
-  .check-row:hover { background: var(--accent-light); }
-
-  /* Guest rows */
+  /* ── GUEST ROWS ── */
   .guest-row {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 11px 14px;
-    transition: box-shadow 0.18s, border-color 0.18s;
+    border-radius: 14px;
+    padding: 12px 16px;
+    transition: all 0.18s;
+    box-shadow: var(--shadow-sm);
   }
-  .guest-row:hover { border-color: var(--accent-mid); box-shadow: 0 4px 12px rgba(91,91,214,0.08); }
+  .guest-row:hover { border-color: rgba(79,70,229,0.3); box-shadow: var(--shadow-md); }
 
-  /* Note cards */
+  /* ── NOTE CARDS ── */
   .note-card {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px 18px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    transition: box-shadow 0.18s;
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s;
   }
-  .note-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.07); }
+  .note-card:hover { box-shadow: var(--shadow-md); }
 
-  /* Payment rows */
+  /* ── PAYMENT ROWS ── */
   .payment-row {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 14px 18px;
-    transition: box-shadow 0.18s;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    border-radius: 14px;
+    padding: 16px 20px;
+    transition: box-shadow 0.2s;
+    box-shadow: var(--shadow-sm);
   }
-  .payment-row:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+  .payment-row:hover { box-shadow: var(--shadow-md); }
 
-  /* Progress */
-  .progress-track { height: 5px; border-radius: 99px; background: var(--surface-3); overflow: hidden; }
-  .progress-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--accent-mid)); transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+  /* ── PROGRESS ── */
+  .progress-track { height: 6px; border-radius: 99px; background: var(--surface-3); overflow: hidden; }
+  .progress-fill {
+    height: 100%; border-radius: 99px;
+    background: var(--grad);
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+    animation: progressFill 0.8s cubic-bezier(0.4,0,0.2,1);
+  }
 
-  /* Photo chips */
+  /* ── PHOTO CHIPS ── */
   .photo-chip {
-    width: 34px; height: 34px; border-radius: 50%;
+    width: 36px; height: 36px; border-radius: 50%;
     object-fit: cover; border: 2.5px solid #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-    margin-left: -9px;
-    transition: transform 0.18s;
+    box-shadow: 0 2px 8px rgba(79,70,229,0.15);
+    margin-left: -10px; transition: transform 0.2s;
   }
   .photo-chip:first-child { margin-left: 0; }
-  .photo-chip:hover { transform: scale(1.1); z-index: 10; }
+  .photo-chip:hover { transform: scale(1.12); z-index: 10; }
 
-  /* Vendor table */
+  /* ── VENDOR TABLE ── */
+  .vendor-row { transition: background 0.15s; }
+  .vendor-row:hover { background: rgba(79,70,229,0.04) !important; }
   .vendor-table th {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--text-3);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 8px 10px;
-    text-align: left;
-    white-space: nowrap;
+    font-size: 10px; font-weight: 700;
+    color: var(--text-3); text-transform: uppercase;
+    letter-spacing: 0.6px; padding: 10px 10px;
+    text-align: left; white-space: nowrap;
   }
-  .vendor-table td { padding: 8px 10px; }
-  .vendor-table tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
+  .vendor-table td { padding: 9px 10px; }
 
+  /* ── GRADIENT BADGE ── */
+  .grad-badge {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+  }
+
+  /* ── SCROLLBAR ── */
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
 
-  .guest-row {
-    background: #ffffff;
-    border: 1px solid #f3f4f6;
-    border-radius: 14px;
-    padding: 12px 16px;
-    transition: box-shadow 0.2s ease, border-color 0.2s ease;
-  }
-  .guest-row:hover { border-color: #e5e7eb; box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
-
-  .note-card {
-    background: #ffffff;
-    border: 1px solid #f0f0f0;
-    border-radius: 16px;
-    padding: 18px 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    transition: box-shadow 0.2s ease;
-  }
-  .note-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
-
-  .payment-row {
-    background: #ffffff;
-    border: 1px solid #f0f0f0;
-    border-radius: 14px;
-    padding: 16px 20px;
-    position: relative;
-    transition: box-shadow 0.2s ease;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  }
-  .payment-row:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
-
-  .progress-track {
-    height: 5px;
-    border-radius: 99px;
-    background: #f3f4f6;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    border-radius: 99px;
-    background: #111827;
-    transition: width 0.7s cubic-bezier(0.4,0,0.2,1);
-    animation: progressFill 1s cubic-bezier(0.4,0,0.2,1);
-  }
-
-  .photo-chip {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    margin-left: -8px;
-    transition: transform 0.2s ease;
-  }
-  .photo-chip:first-child { margin-left: 0; }
-  .photo-chip:hover { transform: scale(1.1); z-index: 10; }
-
-  .header-photo-strip {
-    display: flex;
-    gap: 6px;
-    overflow: hidden;
-    padding: 2px;
-  }
-  .header-photo {
-    width: 52px;
-    height: 52px;
-    border-radius: 12px;
-    object-fit: cover;
-    object-position: top;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    flex-shrink: 0;
-  }
-  .header-photo:hover { transform: scale(1.05); box-shadow: 0 6px 16px rgba(0,0,0,0.18); }
-
-  .login-photo {
-    position: absolute;
-    inset: 0;
-    background-size: cover;
-    background-position: center top;
-    opacity: 0;
-    transition: opacity 1.2s ease;
-  }
-  .login-photo.visible { opacity: 1; }
-
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 10px;
-    border-radius: 99px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: -0.1px;
-  }
-
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 99px; }
-  ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
   select { cursor: pointer; }
   a { text-decoration: none; }
   textarea { resize: vertical; }
@@ -616,7 +389,7 @@ function GmailTab({ vendors }: { vendors: any[] }) {
       {!token ? (
         <div style={{ textAlign:"center", padding:"40px 20px" }}>
           <div style={{ fontSize:48, marginBottom:16 }}>📧</div>
-          <h2 style={{ color:"#0f1117", fontWeight:400, marginBottom:8 }}>Connect your Gmail</h2>
+          <h2 style={{ color:"#0f0f1a", fontWeight:400, marginBottom:8 }}>Connect your Gmail</h2>
           <p style={{ color:"#6b7280", fontSize:13, marginBottom:24, maxWidth:400, margin:"0 auto 24px" }}>
             Sign in with your joint Gmail to search vendor emails, view threads, and track all wedding communication in one place.
           </p>
@@ -643,16 +416,16 @@ function GmailTab({ vendors }: { vendors: any[] }) {
             <div style={{ fontSize:11, color:"#111827", letterSpacing:1, textTransform:"uppercase", marginBottom:12 }}>Search Vendor Emails</div>
             <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:10 }}>
               <select value={selectedVendor} onChange={e=>{setSelectedVendor(e.target.value);setSearch("");}}
-                style={{ background:"#f8f9fc", border:"1px solid #e5e7eb", color:"#111827", borderRadius:8, padding:"7px 12px", fontSize:12, fontFamily:"inherit", flex:1, cursor:"pointer" }}>
+                style={{ background:"#f9f9fc", border:"1px solid #e5e7eb", color:"#111827", borderRadius:8, padding:"7px 12px", fontSize:12, fontFamily:"inherit", flex:1, cursor:"pointer" }}>
                 <option value="">— Pick a vendor —</option>
                 {vendors.filter(v=>v.name!=="TBD"&&v.name!=="Booked").map(v=>(
-                  <option key={v.id} value={v.name} style={{ background:"#f8f9fc" }}>{v.name} ({v.category})</option>
+                  <option key={v.id} value={v.name} style={{ background:"#f9f9fc" }}>{v.name} ({v.category})</option>
                 ))}
               </select>
               <span style={{ color:"#9ca3af", alignSelf:"center", fontSize:12 }}>or</span>
               <input placeholder="Type any search term…" value={search} onChange={e=>{setSearch(e.target.value);setSelectedVendor("");}}
                 onKeyDown={e=>{ if(e.key==="Enter") handleSearch(); }}
-                style={{ background:"#f8f9fc", border:"1px solid #e5e7eb", color:"#0f1117", borderRadius:8, padding:"7px 12px", fontSize:12, fontFamily:"inherit", flex:1, outline:"none" }}/>
+                style={{ background:"#f9f9fc", border:"1px solid #e5e7eb", color:"#0f0f1a", borderRadius:8, padding:"7px 12px", fontSize:12, fontFamily:"inherit", flex:1, outline:"none" }}/>
               <button onClick={handleSearch} style={{ background:"#111827", color:"#0F1923", border:"none", borderRadius:8, padding:"7px 18px", cursor:"pointer", fontSize:12, fontFamily:"inherit", fontWeight:700 }}>
                 {loading ? "Searching…" : "Search"}
               </button>
@@ -672,7 +445,7 @@ function GmailTab({ vendors }: { vendors: any[] }) {
               <a key={email.id} href={`https://mail.google.com/mail/u/0/#inbox/${email.id}`} target="_blank" rel="noreferrer"
                 style={{ textDecoration:"none", display:"block", background:"#ffffff", border:"1px solid #f3f4f6", borderRadius:10, padding:"14px 18px", transition:"border-color 0.2s" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12, marginBottom:6 }}>
-                  <div style={{ fontSize:13, fontWeight:600, color:"#0f1117", flex:1 }}>{email.subject || "(no subject)"}</div>
+                  <div style={{ fontSize:13, fontWeight:600, color:"#0f0f1a", flex:1 }}>{email.subject || "(no subject)"}</div>
                   <div style={{ fontSize:10, color:"#6b7280", whiteSpace:"nowrap", flexShrink:0 }}>{formatDate(email.date)}</div>
                 </div>
                 <div style={{ fontSize:11, color:"#111827", marginBottom:4 }}>{email.from}</div>
@@ -774,17 +547,17 @@ function VendorFiles({ vendorId, vendorName }: { vendorId: number | string, vend
         📎 {files.length > 0 ? `${files.length} file${files.length > 1 ? "s" : ""}` : "Files"} {expanded ? "▲" : "▼"}
       </button>
       {expanded && (
-        <div style={{ marginTop: 6, background: "#0F1923", border: "1px solid #1E2D3D", borderRadius: 8, padding: "8px 10px" }}>
+        <div style={{ marginTop: 6, background: "#0F1923", border: "1px solid #e4e4ef", borderRadius: 8, padding: "8px 10px" }}>
           {files.length === 0 && !uploading && (
             <div style={{ fontSize: 10, color: "#4A5A6A", marginBottom: 6 }}>No files yet — upload contracts, quotes, inspiration</div>
           )}
           {files.map(f => (
             <div key={f.name} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
               <span style={{ fontSize: 12 }}>{fileIcon(f.name)}</span>
-              <a href={f.url} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#B8860B", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <a href={f.url} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#4F46E5", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {f.name.replace(/^\d+-/, "")}
               </a>
-              <button onClick={() => handleDelete(f)} style={{ background: "none", border: "none", color: "#3A4A5A", cursor: "pointer", fontSize: 12, padding: 0 }}>×</button>
+              <button onClick={() => handleDelete(f)} style={{ background: "none", border: "none", color: "#c8c8e0", cursor: "pointer", fontSize: 12, padding: 0 }}>×</button>
             </div>
           ))}
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
@@ -804,19 +577,30 @@ function VendorFiles({ vendorId, vendorName }: { vendorId: number | string, vend
   );
 }
 
-// ── Login Screen with photo carousel ──────────────────────────────────────────
+// ── Login Screen ──────────────────────────────────────────────────────────────
 function LoginScreen({ nameInput, setNameInput, setUserName }: any) {
   const [photoIdx, setPhotoIdx] = useState(0);
+  const [hovered, setHovered] = useState<string|null>(null);
 
   useEffect(() => {
-    const iv = setInterval(() => setPhotoIdx(i => (i+1) % PHOTO_LIST.length), 4000);
+    const iv = setInterval(() => setPhotoIdx(i => (i+1) % PHOTO_LIST.length), 4500);
     return () => clearInterval(iv);
   }, []);
 
+  const roles: Record<string,string> = { Ajay:"Groom", Bianca:"Bride", Kamal:"Groom's mom", Anit:"Bride's mom" };
+
   return (
-    <div style={{ minHeight:"100vh", display:"flex", fontFamily:"Inter,-apple-system,sans-serif" }}>
-      {/* Left: photo carousel */}
-      <div style={{ flex:"0 0 45%", position:"relative", overflow:"hidden", display:"flex" }}>
+    <div style={{ minHeight:"100vh", display:"flex", fontFamily:"'Plus Jakarta Sans',-apple-system,sans-serif", position:"relative", overflow:"hidden" }}>
+
+      {/* ── Full-page gradient mesh background ── */}
+      <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg, #eef2ff 0%, #f5f3ff 35%, #e0f2fe 70%, #ecfdf5 100%)", zIndex:0 }}/>
+      {/* Gradient orbs */}
+      <div style={{ position:"absolute", top:"-10%", left:"-5%", width:600, height:600, borderRadius:"50%", background:"radial-gradient(circle, rgba(79,70,229,0.18) 0%, transparent 70%)", zIndex:0, filter:"blur(40px)" }}/>
+      <div style={{ position:"absolute", bottom:"-10%", right:"30%", width:500, height:500, borderRadius:"50%", background:"radial-gradient(circle, rgba(124,58,237,0.14) 0%, transparent 70%)", zIndex:0, filter:"blur(50px)" }}/>
+      <div style={{ position:"absolute", top:"30%", right:"-5%", width:400, height:400, borderRadius:"50%", background:"radial-gradient(circle, rgba(14,165,233,0.14) 0%, transparent 70%)", zIndex:0, filter:"blur(40px)" }}/>
+
+      {/* ── Left panel: photo carousel ── */}
+      <div style={{ flex:"0 0 48%", position:"relative", overflow:"hidden", zIndex:1, margin:"24px 0 24px 24px", borderRadius:24, boxShadow:"0 24px 80px rgba(79,70,229,0.20)" }}>
         {PHOTO_LIST.map((src, i) => (
           <div key={i} style={{
             position:"absolute", inset:0,
@@ -824,64 +608,110 @@ function LoginScreen({ nameInput, setNameInput, setUserName }: any) {
             backgroundSize:"cover",
             backgroundPosition:"center top",
             opacity: i === photoIdx ? 1 : 0,
-            transition:"opacity 1.2s ease",
+            transition:"opacity 1.4s ease",
           }}/>
         ))}
-        {/* Overlay gradient */}
-        <div style={{ position:"absolute", inset:0, background:"linear-gradient(to right, rgba(0,0,0,0) 60%, rgba(250,250,250,1) 100%)" }}/>
-        {/* Photo dots */}
-        <div style={{ position:"absolute", bottom:24, left:24, display:"flex", gap:6 }}>
-          {PHOTO_LIST.map((_,i) => (
-            <div key={i} onClick={() => setPhotoIdx(i)} style={{
-              width: i===photoIdx ? 20 : 6, height:6, borderRadius:99,
-              background: i===photoIdx ? "#fff" : "rgba(255,255,255,0.5)",
-              cursor:"pointer", transition:"all 0.3s ease",
-            }}/>
-          ))}
+        {/* Dark gradient overlay at bottom */}
+        <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(15,15,26,0.65) 0%, rgba(15,15,26,0.1) 50%, transparent 100%)" }}/>
+        {/* Corner gradient for blend */}
+        <div style={{ position:"absolute", inset:0, background:"linear-gradient(to right, transparent 70%, rgba(238,242,255,0.4) 100%)" }}/>
+
+        {/* Photo caption */}
+        <div style={{ position:"absolute", bottom:28, left:28, right:28, zIndex:2 }}>
+          <div style={{ fontSize:22, fontWeight:800, color:"#fff", letterSpacing:-0.5, marginBottom:4, textShadow:"0 2px 12px rgba(0,0,0,0.3)" }}>Ajay & Bianca</div>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,0.75)", marginBottom:16 }}>Spring 2027 · Portugal 🇵🇹</div>
+          {/* Dots */}
+          <div style={{ display:"flex", gap:6 }}>
+            {PHOTO_LIST.map((_,i) => (
+              <div key={i} onClick={() => setPhotoIdx(i)} style={{
+                width: i===photoIdx ? 24 : 6, height:6, borderRadius:99,
+                background: i===photoIdx ? "#fff" : "rgba(255,255,255,0.4)",
+                cursor:"pointer", transition:"all 0.35s ease",
+              }}/>
+            ))}
+          </div>
+        </div>
+
+        {/* Top badge */}
+        <div style={{ position:"absolute", top:20, left:20, background:"rgba(255,255,255,0.15)", backdropFilter:"blur(12px)", border:"1px solid rgba(255,255,255,0.25)", borderRadius:99, padding:"6px 14px", fontSize:11, fontWeight:600, color:"#fff", letterSpacing:0.3 }}>
+          💍 Wedding Planner
         </div>
       </div>
 
-      {/* Right: login panel */}
-      <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", background:"#fafafa", padding:"40px 32px" }}>
-        <div className="fade-up" style={{ maxWidth:360, width:"100%" }}>
-          <div style={{ marginBottom:32 }}>
-            <div style={{ fontSize:11, letterSpacing:2, color:"#9ca3af", textTransform:"uppercase", marginBottom:8 }}>Spring 2027 · Portugal</div>
-            <h1 style={{ margin:"0 0 8px", fontSize:32, fontWeight:700, color:"#111827", letterSpacing:-1, lineHeight:1.1 }}>Ajay &<br/>Bianca</h1>
-            <p style={{ color:"#6b7280", fontSize:14, margin:0, lineHeight:1.6 }}>Your wedding planning hub. Who's joining today?</p>
+      {/* ── Right panel: login ── */}
+      <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"48px 40px", zIndex:1, position:"relative" }}>
+        <div className="fade-up" style={{ maxWidth:380, width:"100%" }}>
+
+          {/* Header */}
+          <div style={{ marginBottom:36 }}>
+            <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"rgba(79,70,229,0.08)", border:"1px solid rgba(79,70,229,0.15)", borderRadius:99, padding:"5px 14px", marginBottom:16 }}>
+              <div style={{ width:6, height:6, borderRadius:"50%", background:"linear-gradient(135deg,#4F46E5,#7C3AED)", boxShadow:"0 0 0 3px rgba(79,70,229,0.2)" }}/>
+              <span style={{ fontSize:11, fontWeight:700, color:"#4F46E5", letterSpacing:0.5, textTransform:"uppercase" }}>Spring 2027 · Portugal</span>
+            </div>
+            <h1 style={{ margin:"0 0 10px", fontSize:38, fontWeight:800, letterSpacing:-1.5, lineHeight:1.05, background:"linear-gradient(135deg,#0f0f1a 0%,#4F46E5 60%,#7C3AED 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
+              Your wedding,<br/>perfectly planned.
+            </h1>
+            <p style={{ color:"#8888aa", fontSize:14, margin:0, lineHeight:1.65, fontWeight:400 }}>
+              Budget, vendors, guests, timelines — all in one place for the whole family.
+            </p>
           </div>
 
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:16 }}>
-            {(["Ajay","Bianca","Kamal","Anit"] as const).map((n,i) => (
-              <button key={n} onClick={() => { setUserName(n); localStorage.setItem("wp_username", n); }}
-                className={`fade-up stagger-${i+1}`}
-                style={{
-                  background:"#ffffff", border:"1px solid #e5e7eb", borderRadius:14,
-                  padding:"16px 12px", cursor:"pointer", textAlign:"left",
-                  transition:"all 0.2s ease", boxShadow:"0 1px 4px rgba(0,0,0,0.04)",
-                }}>
-                <div style={{ width:28, height:28, borderRadius:"50%", background:AUTHOR_COLORS[n], marginBottom:8, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:"#fff" }}>
-                  {n[0]}
-                </div>
-                <div style={{ fontSize:13, fontWeight:600, color:"#111827" }}>{n}</div>
-                <div style={{ fontSize:11, color:"#9ca3af", marginTop:2 }}>
-                  {n === "Ajay" ? "Groom" : n === "Bianca" ? "Bride" : n === "Kamal" ? "Groom's mom" : "Bride's mom"}
-                </div>
-              </button>
-            ))}
+          {/* Person picker */}
+          <div style={{ marginBottom:6 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:"#8888aa", textTransform:"uppercase", letterSpacing:0.8, marginBottom:10 }}>Who's joining today?</div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+              {(["Ajay","Bianca","Kamal","Anit"] as const).map((n,i) => (
+                <button key={n}
+                  onClick={() => { setUserName(n); localStorage.setItem("wp_username", n); }}
+                  onMouseEnter={() => setHovered(n)}
+                  onMouseLeave={() => setHovered(null)}
+                  className={`fade-up stagger-${i+1}`}
+                  style={{
+                    background: hovered===n ? "linear-gradient(135deg,rgba(79,70,229,0.06),rgba(124,58,237,0.04))" : "#ffffff",
+                    border: hovered===n ? "1.5px solid rgba(79,70,229,0.35)" : "1.5px solid #e4e4ef",
+                    borderRadius:16, padding:"16px 14px", cursor:"pointer", textAlign:"left",
+                    transition:"all 0.2s ease",
+                    boxShadow: hovered===n ? "0 8px 24px rgba(79,70,229,0.12)" : "0 1px 4px rgba(0,0,0,0.04)",
+                    transform: hovered===n ? "translateY(-2px)" : "none",
+                  }}>
+                  <div style={{ width:32, height:32, borderRadius:10, background:AUTHOR_COLORS[n], marginBottom:10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:800, color:"#fff", boxShadow:`0 4px 12px ${AUTHOR_COLORS[n]}55` }}>
+                    {n[0]}
+                  </div>
+                  <div style={{ fontSize:14, fontWeight:700, color:"#0f0f1a", letterSpacing:-0.2 }}>{n}</div>
+                  <div style={{ fontSize:11, color:"#8888aa", marginTop:2, fontWeight:500 }}>{roles[n]}</div>
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-            <div style={{ flex:1, height:1, background:"#f0f0f0" }}/>
-            <span style={{ fontSize:11, color:"#d1d5db" }}>or</span>
-            <div style={{ flex:1, height:1, background:"#f0f0f0" }}/>
+          {/* Divider */}
+          <div style={{ display:"flex", gap:10, alignItems:"center", margin:"20px 0" }}>
+            <div style={{ flex:1, height:1, background:"linear-gradient(to right, transparent, #e4e4ef)" }}/>
+            <span style={{ fontSize:11, color:"#c8c8e0", fontWeight:500 }}>or enter your name</span>
+            <div style={{ flex:1, height:1, background:"linear-gradient(to left, transparent, #e4e4ef)" }}/>
           </div>
 
-          <div style={{ display:"flex", gap:8, marginTop:16 }}>
-            <input placeholder="Type your name…" value={nameInput} onChange={e => setNameInput(e.target.value)}
+          {/* Name input */}
+          <div style={{ display:"flex", gap:8 }}>
+            <input
+              placeholder="Type your name…"
+              value={nameInput}
+              onChange={e => setNameInput(e.target.value)}
               onKeyDown={e => { if(e.key==="Enter"&&nameInput.trim()){ setUserName(nameInput.trim()); localStorage.setItem("wp_username",nameInput.trim()); }}}
-              style={{ flex:1, background:"#ffffff", border:"1px solid #e5e7eb", borderRadius:12, padding:"10px 14px", fontSize:13, color:"#111827", outline:"none" }}/>
-            <button onClick={() => { if(nameInput.trim()){ setUserName(nameInput.trim()); localStorage.setItem("wp_username",nameInput.trim()); }}}
-              className="primary-btn">Enter</button>
+              style={{ flex:1, background:"#ffffff", border:"1.5px solid #e4e4ef", borderRadius:12, padding:"11px 16px", fontSize:13, color:"#0f0f1a", outline:"none", transition:"border-color 0.15s", fontFamily:"'Plus Jakarta Sans',sans-serif" }}
+              onFocus={e => e.target.style.borderColor="rgba(79,70,229,0.5)"}
+              onBlur={e => e.target.style.borderColor="#e4e4ef"}
+            />
+            <button
+              onClick={() => { if(nameInput.trim()){ setUserName(nameInput.trim()); localStorage.setItem("wp_username",nameInput.trim()); }}}
+              className="primary-btn">
+              Enter →
+            </button>
+          </div>
+
+          {/* Footer */}
+          <div style={{ marginTop:28, fontSize:11, color:"#c8c8e0", textAlign:"center", lineHeight:1.6 }}>
+            5 events · €500K budget · Portugal 🇵🇹
           </div>
         </div>
       </div>
@@ -1060,7 +890,7 @@ const DEFAULT_CHECKLIST = [
 const STATUS_COLORS  = { "Research":"#94a3b8","Inquired":"#F59E0B","Booked":"#10B981","Deposit Paid":"#3B82F6","Paid in Full":"#6366F1","Cancelled":"#EF4444" };
 const PRIORITY_COLORS= { high:"#EF4444", med:"#F59E0B", low:"#10B981" };
 const RSVP_COLORS    = { "Confirmed":"#10B981","Pending":"#F59E0B","Declined":"#EF4444","Not Sent":"#94a3b8" };
-const SIDE_COLORS    = { "Bride":"#8E44AD","Groom":"#1A7FC1","Both":"#B8860B" };
+const SIDE_COLORS    = { "Bride":"#8E44AD","Groom":"#1A7FC1","Both":"#4F46E5" };
 const AUTHOR_COLORS  = { "Ajay":"#1A7FC1","Bianca":"#8E44AD","Kamal":"#E8A020","Anit":"#C0392B" };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1245,7 +1075,7 @@ export default function WeddingPlanner() {
     {id:"guests",label:`Guests (${guests.length})`},{id:"notes",label:`Notes (${notes.length})`},
     {id:"gmail",label:"📧 Gmail"},
   ];
-  const inp=(extra={})=>({background:"transparent",border:"none",color:"#0f1117",fontSize:13,fontFamily:"Inter,-apple-system,BlinkMacSystemFont,sans-serif",outline:"none",width:"100%",...extra});
+  const inp=(extra={})=>({background:"transparent",border:"none",color:"#0f0f1a",fontSize:13,fontFamily:"Inter,-apple-system,BlinkMacSystemFont,sans-serif",outline:"none",width:"100%",...extra});
   const card=(extra={})=>({background:"#ffffff",border:"1px solid #e5e7eb",borderRadius:12,padding:"16px 18px",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",...extra});
 
   // ── Name gate ──
@@ -1267,10 +1097,10 @@ export default function WeddingPlanner() {
   );
 
   return(
-    <div style={{minHeight:"100vh",background:"#f6f6f7",fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",color:"#111827"}}>
+    <div style={{minHeight:"100vh",background:"#f4f4f8",fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",color:"#111827"}}>
 
       {/* HEADER */}
-      <div style={{background:"#ffffff",borderBottom:"1px solid #e8e8ec",padding:"14px 24px 0",position:"sticky",top:0,zIndex:100,boxShadow:"0 1px 12px rgba(0,0,0,0.05)"}}>
+      <div style={{background:"linear-gradient(135deg,#ffffff 0%,#fafafe 100%)",borderBottom:"1px solid #e4e4ef",padding:"14px 24px 0",position:"sticky",top:0,zIndex:100,boxShadow:"0 1px 20px rgba(79,70,229,0.07)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12,maxWidth:1200,margin:"0 auto"}}>
           {/* Left: brand + dates */}
           <div style={{display:"flex",alignItems:"center",gap:16}}>
@@ -1290,7 +1120,7 @@ export default function WeddingPlanner() {
           <div style={{display:"flex",gap:16,flexWrap:"wrap",alignItems:"center"}}>
             {events.map(e=>(
               <div key={e.id} style={{textAlign:"center"}}>
-                <div style={{fontSize:10,fontWeight:600,color:"#9ca3af",textTransform:"uppercase",letterSpacing:0.5}}>{e.label.split(" ")[0]}</div>
+                <div style={{fontSize:10,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.8}}>{e.label.split(" ")[0]}</div>
                 <div style={{fontSize:15,fontWeight:700,color:"#111827",letterSpacing:-0.5}}>{daysUntil(e.date)}<span style={{fontSize:10,fontWeight:400,color:"#9ca3af"}}>d</span></div>
               </div>
             ))}
@@ -1298,10 +1128,10 @@ export default function WeddingPlanner() {
 
           {/* Right: user + rate */}
           <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <div style={{display:"flex",alignItems:"center",gap:6,fontSize:12}}>
-              <span style={{fontSize:10,color:"#9ca3af"}}>EUR/USD</span>
+            <div style={{display:"flex",alignItems:"center",gap:8,background:"rgba(79,70,229,0.06)",border:"1px solid rgba(79,70,229,0.15)",borderRadius:10,padding:"6px 12px"}}>
+              <span style={{fontSize:11,fontWeight:600,color:"#4F46E5"}}>EUR/USD</span>
               <input type="number" step="0.01" value={eurRate} onChange={e=>setEurRate(Number(e.target.value)||1.09)}
-                style={{width:48,background:"#f9fafb",border:"1px solid #e5e7eb",borderRadius:8,padding:"4px 6px",fontSize:12,color:"#111827",outline:"none",textAlign:"center"}}/>
+                style={{width:56,background:"transparent",border:"none",fontSize:13,fontWeight:700,color:"#4F46E5",outline:"none",textAlign:"center"}}/>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:8,background:"#f9fafb",border:"1px solid #f0f0f0",borderRadius:99,padding:"6px 12px"}}>
               <div style={{width:8,height:8,borderRadius:"50%",background:AUTHOR_COLORS[userName]||"#9ca3af"}}/>
@@ -1321,7 +1151,7 @@ export default function WeddingPlanner() {
         </div>
       </div>
 
-      <div style={{padding:"24px 24px 60px",maxWidth:1200,margin:"0 auto"}}>
+      <div style={{padding:"28px 28px 80px",maxWidth:1240,margin:"0 auto"}}>
 
         {/* ══ OVERVIEW ══ */}
         {tab==="overview" && (
@@ -1337,7 +1167,7 @@ export default function WeddingPlanner() {
                 {label:"Checklist",       value:`${checkDone}/${checkTotal}`,          sub:"items done"},
               ].map(c=>(
                 <div key={c.label} className="stat-card fade-up">
-                  <div style={{fontSize:10,fontWeight:600,color:"#9ca3af",textTransform:"uppercase",letterSpacing:0.5}}>{c.label}</div>
+                  <div style={{fontSize:10,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.8}}>{c.label}</div>
                   <div style={{fontSize:22,fontWeight:700,color:c.col||"#F5ECD7",margin:"5px 0 2px"}}>{c.value}</div>
                   <div style={{fontSize:10,color:"#6b7280"}}>{c.sub}</div>
                 </div>
@@ -1358,7 +1188,7 @@ export default function WeddingPlanner() {
                   <div key={ev.id} style={{display:"flex",alignItems:"center",gap:5,fontSize:10}}>
                     <div style={{width:7,height:7,borderRadius:"50%",background:ev.color}}/>
                     <span style={{color:"#111827"}}>{ev.emoji} {ev.label}</span>
-                    <span style={{color:"#0f1117",fontWeight:700}}>${budget[ev.id].total.toLocaleString()}</span>
+                    <span style={{color:"#0f0f1a",fontWeight:700}}>${budget[ev.id].total.toLocaleString()}</span>
                   </div>
                 ))}
               </div>
@@ -1366,7 +1196,7 @@ export default function WeddingPlanner() {
 
             {/* Event timeline with editable dates */}
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"18px 0 10px"}}>
-              <h2 style={{fontSize:11,fontWeight:700,color:"#111827",textTransform:"uppercase",margin:0,letterSpacing:0.5}}>Event Timeline</h2>
+              <h2 style={{fontSize:10,fontWeight:800,color:"#4F46E5",textTransform:"uppercase",margin:0,letterSpacing:1.2}}>Event Timeline</h2>
               <span style={{fontSize:10,color:"#9ca3af"}}>Click a date to edit</span>
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
@@ -1377,14 +1207,14 @@ export default function WeddingPlanner() {
                     <div style={{fontSize:9,color:ev.color,fontWeight:700}}>Day {i+1}</div>
                   </div>
                   <div>
-                    <div style={{fontSize:14,fontWeight:600,color:"#0f1117"}}>{ev.label}</div>
+                    <div style={{fontSize:14,fontWeight:600,color:"#0f0f1a"}}>{ev.label}</div>
                     <div style={{fontSize:10,color:"#6b7280",marginTop:3,display:"flex",alignItems:"center",gap:6}}>
                       {editingDate===ev.id ? (
                         <input type="date" value={ev.date}
                           onChange={e=>updateEventDate(ev.id,e.target.value)}
                           onBlur={()=>setEditingDate(null)}
                           autoFocus
-                          style={{...inp(),width:140,fontSize:11,color:"#111827",background:"#f5f6fa",border:"1px solid #111827",borderRadius:6,padding:"2px 6px"}}/>
+                          style={{...inp(),width:140,fontSize:11,color:"#111827",background:"#f9f9fc",border:"1px solid #111827",borderRadius:6,padding:"2px 6px"}}/>
                       ):(
                         <span onClick={()=>setEditingDate(ev.id)} style={{cursor:"pointer",borderBottom:"1px dashed #d1d5db",paddingBottom:1}}>
                           {new Date(ev.date+"T00:00:00").toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}
@@ -1424,7 +1254,7 @@ export default function WeddingPlanner() {
             </div>
 
             {/* Rate reminder */}
-            <div style={{background:"#f5f6fa",border:"1px solid #e5e7eb",borderRadius:9,padding:"10px 16px",marginBottom:16,fontSize:11,color:"#6b7280"}}>
+            <div style={{background:"#f9f9fc",border:"1px solid #e5e7eb",borderRadius:9,padding:"10px 16px",marginBottom:16,fontSize:11,color:"#6b7280"}}>
               💱 All amounts entered in <strong style={{color:"#111827"}}>Euros (€)</strong>. Converted to USD at <strong style={{color:"#111827"}}>1 EUR = ${eurRate} USD</strong>. Update the rate in the header bar anytime.
             </div>
 
@@ -1448,26 +1278,26 @@ export default function WeddingPlanner() {
                       <div style={{fontSize:9,color:"#6b7280",marginBottom:3}}>{f.label}</div>
                       <input type={f.type} value={newPayment[f.field]} placeholder={f.placeholder}
                         onChange={e=>setNewPayment(p=>({...p,[f.field]:e.target.value}))}
-                        style={{...inp(),background:"#f8f9fc",border:"1px solid #e5e7eb",borderRadius:6,padding:"6px 10px",fontSize:12}}/>
+                        style={{...inp(),background:"#f9f9fc",border:"1px solid #e5e7eb",borderRadius:6,padding:"6px 10px",fontSize:12}}/>
                     </div>
                   ))}
                   <div>
                     <div style={{fontSize:9,color:"#6b7280",marginBottom:3}}>PAID BY</div>
                     <select value={newPayment.paidBy} onChange={e=>setNewPayment(p=>({...p,paidBy:e.target.value}))}
-                      style={{background:"#f8f9fc",border:"1px solid #e5e7eb",color:AUTHOR_COLORS[newPayment.paidBy]||"#C9A96E",borderRadius:6,padding:"6px 10px",fontSize:12,fontFamily:"inherit",width:"100%",cursor:"pointer"}}>
-                      {["Ajay","Bianca","Kamal","Anit"].map(n=><option key={n} value={n} style={{background:"#f8f9fc",color:AUTHOR_COLORS[n]}}>{n}</option>)}
+                      style={{background:"#f9f9fc",border:"1px solid #e5e7eb",color:AUTHOR_COLORS[newPayment.paidBy]||"#C9A96E",borderRadius:6,padding:"6px 10px",fontSize:12,fontFamily:"inherit",width:"100%",cursor:"pointer"}}>
+                      {["Ajay","Bianca","Kamal","Anit"].map(n=><option key={n} value={n} style={{background:"#f9f9fc",color:AUTHOR_COLORS[n]}}>{n}</option>)}
                     </select>
                   </div>
                   <div>
                     <div style={{fontSize:9,color:"#6b7280",marginBottom:3}}>EVENT</div>
                     <select value={newPayment.event} onChange={e=>setNewPayment(p=>({...p,event:e.target.value}))}
-                      style={{background:"#f8f9fc",border:"1px solid #e5e7eb",color:"#111827",borderRadius:6,padding:"6px 10px",fontSize:12,fontFamily:"inherit",width:"100%",cursor:"pointer"}}>
-                      {[...events.map(e=>({id:e.id,label:e.label})),{id:"all",label:"All Events"}].map(e=><option key={e.id} value={e.id} style={{background:"#f8f9fc"}}>{e.label}</option>)}
+                      style={{background:"#f9f9fc",border:"1px solid #e5e7eb",color:"#111827",borderRadius:6,padding:"6px 10px",fontSize:12,fontFamily:"inherit",width:"100%",cursor:"pointer"}}>
+                      {[...events.map(e=>({id:e.id,label:e.label})),{id:"all",label:"All Events"}].map(e=><option key={e.id} value={e.id} style={{background:"#f9f9fc"}}>{e.label}</option>)}
                     </select>
                   </div>
                 </div>
                 {newPayment.amountEur&&(
-                  <div style={{background:"#f8f9fc",borderRadius:8,padding:"8px 12px",marginBottom:12,fontSize:11,color:"#6b7280"}}>
+                  <div style={{background:"#f9f9fc",borderRadius:8,padding:"8px 12px",marginBottom:12,fontSize:11,color:"#6b7280"}}>
                     Preview: <strong style={{color:"#111827"}}>{fmtEUR(Number(newPayment.amountEur))}</strong> = <strong style={{color:"#10B981"}}>{fmtUSD(eurToUsd(Number(newPayment.amountEur),eurRate))}</strong> at current rate
                   </div>
                 )}
@@ -1483,12 +1313,12 @@ export default function WeddingPlanner() {
               {payments.map(p=>{
                 const usd=eurToUsd(p.amountEur,eurRate);
                 const ev=events.find(e=>e.id===p.event)||{color:"#888",emoji:"📌",label:"All Events"};
-                const authorCol=AUTHOR_COLORS[p.paidBy]||"#B8860B";
+                const authorCol=AUTHOR_COLORS[p.paidBy]||"#4F46E5";
                 return(
-                  <div key={p.id} style={{background:"#ffffff",border:`1px solid #1E2D3D`,borderLeft:`4px solid ${authorCol}`,borderRadius:10,padding:"14px 18px",position:"relative"}}>
+                  <div key={p.id} style={{background:"#ffffff",border:`1px solid #e4e4ef`,borderLeft:`4px solid ${authorCol}`,borderRadius:10,padding:"14px 18px",position:"relative"}}>
                     <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"start"}}>
                       <div>
-                        <div style={{fontSize:14,fontWeight:600,color:"#0f1117",marginBottom:4}}>{p.description}</div>
+                        <div style={{fontSize:14,fontWeight:600,color:"#0f0f1a",marginBottom:4}}>{p.description}</div>
                         <div style={{display:"flex",gap:12,flexWrap:"wrap",fontSize:11}}>
                           <span style={{color:authorCol,fontWeight:700}}>👤 {p.paidBy}</span>
                           <span style={{color:ev.color}}>{ev.emoji} {ev.label}</span>
@@ -1513,12 +1343,12 @@ export default function WeddingPlanner() {
         {tab==="budget" && (
           <div>
             <div style={{...card(),marginBottom:18,display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
-              <div><div style={{fontSize:10,fontWeight:600,color:"#9ca3af",textTransform:"uppercase",letterSpacing:0.5}}>Allocated</div><div style={{fontSize:20,fontWeight:700,color:totalBudgetAll>500000?"#EF4444":"#111827"}}>${totalBudgetAll.toLocaleString()}</div></div>
+              <div><div style={{fontSize:10,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.8}}>Allocated</div><div style={{fontSize:20,fontWeight:700,color:totalBudgetAll>500000?"#EF4444":"#111827"}}>${totalBudgetAll.toLocaleString()}</div></div>
               <div style={{color:"#d1d5db",fontSize:18}}>/</div>
               <div><div style={{fontSize:9,letterSpacing:2,color:"#6b7280",textTransform:"uppercase"}}>Target</div><div style={{fontSize:20,fontWeight:700,color:"#6b7280"}}>$500,000</div></div>
               <div style={{flex:1,minWidth:140}}>
-                <div style={{background:"#f8f9fc",borderRadius:99,height:7,overflow:"hidden"}}>
-                  <div style={{height:"100%",background:totalBudgetAll>500000?"#EF4444":"#B8860B",width:`${Math.min(100,(totalBudgetAll/500000)*100)}%`,transition:"width 0.4s",borderRadius:99}}/>
+                <div style={{background:"#f9f9fc",borderRadius:99,height:7,overflow:"hidden"}}>
+                  <div style={{height:"100%",background:totalBudgetAll>500000?"#EF4444":"#4F46E5",width:`${Math.min(100,(totalBudgetAll/500000)*100)}%`,transition:"width 0.4s",borderRadius:99}}/>
                 </div>
                 <div style={{fontSize:9,color:totalBudgetAll>500000?"#EF4444":"#10B981",marginTop:3}}>{totalBudgetAll>500000?`Over by $${(totalBudgetAll-500000).toLocaleString()}`:`$${(500000-totalBudgetAll).toLocaleString()} remaining`}</div>
               </div>
@@ -1553,13 +1383,13 @@ export default function WeddingPlanner() {
                       </div>
                     ))}
                   </div>
-                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14,background:"#f5f6fa",border:"1px solid #e5e7eb",borderRadius:9,padding:"9px 14px"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14,background:"#f9f9fc",border:"1px solid #e5e7eb",borderRadius:9,padding:"9px 14px"}}>
                     <span style={{fontSize:11,color:"#111827",minWidth:110}}>Event Budget (USD):</span>
                     <span style={{color:"#6b7280",fontSize:11}}>$</span>
                     <input type="number" value={bd.total} onChange={e=>updateBudgetTotal(budgetEvent,e.target.value)} style={{...inp(),width:110,fontSize:15,fontWeight:700}}/>
                     <span style={{fontSize:10,color:"#9ca3af",marginLeft:8}}>≈ {fmtEUR(bd.total/eurRate)} at current rate</span>
                   </div>
-                  <div style={{background:"#f1f3f8",borderRadius:99,height:7,marginBottom:14,overflow:"hidden"}}>
+                  <div style={{background:"#f1f1f6",borderRadius:99,height:7,marginBottom:14,overflow:"hidden"}}>
                     <div style={{height:"100%",borderRadius:99,background:`linear-gradient(90deg,${ev.color},${ev.color}88)`,width:`${Math.min(100,(totalSpentUsd/bd.total)*100)}%`,transition:"width 0.5s"}}/>
                   </div>
                   <div style={{fontSize:10,color:"#6b7280",marginBottom:10}}>
@@ -1567,7 +1397,7 @@ export default function WeddingPlanner() {
                   </div>
                   <div style={{display:"flex",flexDirection:"column",gap:5}}>
                     {bd.items.map(item=>(
-                      <div key={item.name} style={{display:"grid",gridTemplateColumns:"1fr 100px 80px 26px",alignItems:"center",gap:8,background:"#f5f6fa",border:"1px solid #e5e7eb",borderRadius:8,padding:"9px 12px"}}>
+                      <div key={item.name} style={{display:"grid",gridTemplateColumns:"1fr 100px 80px 26px",alignItems:"center",gap:8,background:"#f9f9fc",border:"1px solid #e5e7eb",borderRadius:8,padding:"9px 12px"}}>
                         <input value={item.name} onChange={e=>updateItemName(budgetEvent,item.name,e.target.value)} style={{...inp(),fontSize:12}}/>
                         <div>
                           <div style={{fontSize:8,color:"#6b7280",letterSpacing:1}}>BUDGET (USD)</div>
@@ -1595,7 +1425,7 @@ export default function WeddingPlanner() {
         {/* ══ VENDORS ══ */}
         {tab==="vendors" && (
           <div>
-            <div style={{background:"#f5f6fa",border:"1px solid #e5e7eb",borderRadius:9,padding:"10px 16px",marginBottom:16,fontSize:11,color:"#6b7280"}}>
+            <div style={{background:"#f9f9fc",border:"1px solid #e5e7eb",borderRadius:9,padding:"10px 16px",marginBottom:16,fontSize:11,color:"#6b7280"}}>
               💡 Vendor costs are shown in <strong style={{color:"#111827"}}>EUR</strong> since you're paying Portuguese vendors in euros. USD equivalent shown alongside.
             </div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
@@ -1613,10 +1443,10 @@ export default function WeddingPlanner() {
                 </thead>
                 <tbody>
                   {vendors.map((v,i)=>(
-                    <tr key={v.id} style={{borderBottom:"1px solid #f3f4f6",background:i%2===0?"#ffffff":"#f9fafb"}}>
+                    <tr key={v.id} style={{borderBottom:"1px solid #f3f4f6",background:i%2===0?"#ffffff":"#f9f9fc"}}>
                       <td style={{padding:"7px 9px"}}>
                         <select value={v.event} onChange={e=>updateVendor(v.id,"event",e.target.value)} style={{background:"transparent",color:"#1a1a2e",border:"none",fontSize:10,fontFamily:"inherit",cursor:"pointer"}}>
-                          {[...events.map(e=>({id:e.id,label:e.label})),{id:"all",label:"All Events"}].map(ev=><option key={ev.id} value={ev.id} style={{background:"#f1f3f8"}}>{ev.label}</option>)}
+                          {[...events.map(e=>({id:e.id,label:e.label})),{id:"all",label:"All Events"}].map(ev=><option key={ev.id} value={ev.id} style={{background:"#f1f1f6"}}>{ev.label}</option>)}
                         </select>
                       </td>
                       <td style={{padding:"7px 9px"}}><input value={v.category} onChange={e=>updateVendor(v.id,"category",e.target.value)} style={{...inp(),width:85}}/></td>
@@ -1637,8 +1467,8 @@ export default function WeddingPlanner() {
                       </td>
                       <td style={{padding:"7px 9px",color:"#4A6A4A",fontSize:10}}>{fmtUSD(eurToUsd(v.depositEur,eurRate))}</td>
                       <td style={{padding:"7px 9px"}}>
-                        <select value={v.status} onChange={e=>updateVendor(v.id,"status",e.target.value)} style={{background:"#f1f3f8",color:STATUS_COLORS[v.status]||"#fff",border:`1px solid ${STATUS_COLORS[v.status]||"#444"}`,borderRadius:99,padding:"2px 8px",fontSize:10,fontFamily:"inherit",cursor:"pointer"}}>
-                          {Object.keys(STATUS_COLORS).map(s=><option key={s} value={s} style={{background:"#f1f3f8",color:STATUS_COLORS[s]}}>{s}</option>)}
+                        <select value={v.status} onChange={e=>updateVendor(v.id,"status",e.target.value)} style={{background:"#f1f1f6",color:STATUS_COLORS[v.status]||"#fff",border:`1px solid ${STATUS_COLORS[v.status]||"#444"}`,borderRadius:99,padding:"2px 8px",fontSize:10,fontFamily:"inherit",cursor:"pointer"}}>
+                          {Object.keys(STATUS_COLORS).map(s=><option key={s} value={s} style={{background:"#f1f1f6",color:STATUS_COLORS[s]}}>{s}</option>)}
                         </select>
                       </td>
                       <td style={{padding:"7px 9px"}}><input value={v.notes} onChange={e=>updateVendor(v.id,"notes",e.target.value)} style={{...inp(),width:150,color:"#6b7280"}} placeholder="Notes…"/>
@@ -1650,10 +1480,10 @@ export default function WeddingPlanner() {
                 </tbody>
               </table>
             </div>
-            <div style={{display:"flex",gap:16,marginTop:14,background:"#f5f6fa",border:"1px solid #e5e7eb",borderRadius:9,padding:"10px 16px",flexWrap:"wrap"}}>
+            <div style={{display:"flex",gap:16,marginTop:14,background:"#f9f9fc",border:"1px solid #e5e7eb",borderRadius:9,padding:"10px 16px",flexWrap:"wrap"}}>
               <div>
                 <div style={{fontSize:9,color:"#6b7280",textTransform:"uppercase",letterSpacing:1}}>Total Vendor Cost</div>
-                <div style={{fontSize:15,fontWeight:700,color:"#0f1117"}}>{fmtEUR(vendors.reduce((s,v)=>s+v.costEur,0))}</div>
+                <div style={{fontSize:15,fontWeight:700,color:"#0f0f1a"}}>{fmtEUR(vendors.reduce((s,v)=>s+v.costEur,0))}</div>
                 <div style={{fontSize:10,color:"#4A6A4A"}}>{fmtUSD(eurToUsd(vendors.reduce((s,v)=>s+v.costEur,0),eurRate))}</div>
               </div>
               <div>
@@ -1687,16 +1517,16 @@ export default function WeddingPlanner() {
                     </div>
                   </div>
                   {showNewCard===col.key&&(
-                    <div style={{margin:"8px 8px 0",background:"#f5f6fa",border:"1px solid #e5e7eb",borderRadius:8,padding:"9px 11px"}}>
+                    <div style={{margin:"8px 8px 0",background:"#f9f9fc",border:"1px solid #e5e7eb",borderRadius:8,padding:"9px 11px"}}>
                       <input placeholder="Task title…" value={newCard.title} onChange={e=>setNewCard(n=>({...n,title:e.target.value}))}
                         style={{...inp(),marginBottom:7,borderBottom:"1px solid #2A3A4A",paddingBottom:3,fontSize:12}}
                         onKeyDown={e=>{if(e.key==="Enter")addCard(col.key);if(e.key==="Escape")setShowNewCard(null);}} autoFocus/>
                       <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:7}}>
-                        <select value={newCard.event} onChange={e=>setNewCard(n=>({...n,event:e.target.value}))} style={{background:"#f8f9fc",border:"1px solid #e5e7eb",color:"#111827",fontSize:10,borderRadius:5,padding:"2px 5px",fontFamily:"inherit"}}>
-                          {[...events.map(e=>({id:e.id,label:e.label})),{id:"all",label:"All Events"}].map(ev=><option key={ev.id} value={ev.id} style={{background:"#f8f9fc"}}>{ev.label}</option>)}
+                        <select value={newCard.event} onChange={e=>setNewCard(n=>({...n,event:e.target.value}))} style={{background:"#f9f9fc",border:"1px solid #e5e7eb",color:"#111827",fontSize:10,borderRadius:5,padding:"2px 5px",fontFamily:"inherit"}}>
+                          {[...events.map(e=>({id:e.id,label:e.label})),{id:"all",label:"All Events"}].map(ev=><option key={ev.id} value={ev.id} style={{background:"#f9f9fc"}}>{ev.label}</option>)}
                         </select>
-                        <select value={newCard.priority} onChange={e=>setNewCard(n=>({...n,priority:e.target.value}))} style={{background:"#f8f9fc",border:"1px solid #e5e7eb",color:PRIORITY_COLORS[newCard.priority],fontSize:10,borderRadius:5,padding:"2px 5px",fontFamily:"inherit"}}>
-                          {["high","med","low"].map(p=><option key={p} value={p} style={{background:"#f8f9fc",color:PRIORITY_COLORS[p]}}>{p}</option>)}
+                        <select value={newCard.priority} onChange={e=>setNewCard(n=>({...n,priority:e.target.value}))} style={{background:"#f9f9fc",border:"1px solid #e5e7eb",color:PRIORITY_COLORS[newCard.priority],fontSize:10,borderRadius:5,padding:"2px 5px",fontFamily:"inherit"}}>
+                          {["high","med","low"].map(p=><option key={p} value={p} style={{background:"#f9f9fc",color:PRIORITY_COLORS[p]}}>{p}</option>)}
                         </select>
                         <input placeholder="Due e.g. 2026-10" value={newCard.due} onChange={e=>setNewCard(n=>({...n,due:e.target.value}))} style={{...inp(),width:100,border:"1px solid #e5e7eb",borderRadius:5,padding:"2px 5px",fontSize:10}}/>
                       </div>
@@ -1716,7 +1546,7 @@ export default function WeddingPlanner() {
                           {isEditing?(
                             <input autoFocus value={card.title} onChange={e=>updateCardTitle(col.key,card.id,e.target.value)} onBlur={()=>setEditingCard(null)} onKeyDown={e=>{if(e.key==="Enter"||e.key==="Escape")setEditingCard(null);}} style={{...inp(),fontSize:11,borderBottom:"1px solid #6366f1",paddingBottom:2}}/>
                           ):(
-                            <div style={{fontSize:11,color:"#0f1117",lineHeight:1.4,cursor:"text"}} onClick={()=>setEditingCard({col:col.key,id:card.id})}>{card.title}</div>
+                            <div style={{fontSize:11,color:"#0f0f1a",lineHeight:1.4,cursor:"text"}} onClick={()=>setEditingCard({col:col.key,id:card.id})}>{card.title}</div>
                           )}
                           <div style={{display:"flex",justifyContent:"space-between",marginTop:5,alignItems:"center"}}>
                             <span style={{fontSize:8,color:ev.color}}>{ev.emoji} {ev.label}</span>
@@ -1740,9 +1570,9 @@ export default function WeddingPlanner() {
             <div style={{marginBottom:16}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
                 <span style={{fontSize:11,color:"#111827",letterSpacing:2,textTransform:"uppercase"}}>Overall Progress</span>
-                <span style={{fontSize:12,color:"#0f1117"}}>{checkDone}/{checkTotal} done</span>
+                <span style={{fontSize:12,color:"#0f0f1a"}}>{checkDone}/{checkTotal} done</span>
               </div>
-              <div style={{background:"#f1f3f8",borderRadius:99,height:8,overflow:"hidden"}}>
+              <div style={{background:"#f1f1f6",borderRadius:99,height:8,overflow:"hidden"}}>
                 <div style={{height:"100%",borderRadius:99,background:"linear-gradient(90deg,#6366f1,#8b5cf6)",width:`${checkTotal>0?(checkDone/checkTotal)*100:0}%`,transition:"width 0.4s"}}/>
               </div>
             </div>
@@ -1750,9 +1580,9 @@ export default function WeddingPlanner() {
               const done=cat.items.filter(i=>i.done).length;
               return(
                 <div key={cat.category} style={{background:"#ffffff",border:"1px solid #f3f4f6",borderRadius:12,marginBottom:12,overflow:"hidden"}}>
-                  <div style={{padding:"10px 16px",background:"#f8f9fc",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div style={{padding:"10px 16px",background:"#f9f9fc",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                     <span style={{fontSize:12,color:"#111827",fontWeight:600}}>{cat.category}</span>
-                    <span style={{fontSize:9,color:done===cat.items.length?"#10B981":"#8A9DB0",background:"#f8f9fc",borderRadius:99,padding:"2px 8px"}}>{done}/{cat.items.length}</span>
+                    <span style={{fontSize:9,color:done===cat.items.length?"#10B981":"#8A9DB0",background:"#f9f9fc",borderRadius:99,padding:"2px 8px"}}>{done}/{cat.items.length}</span>
                   </div>
                   <div style={{padding:"6px 12px"}}>
                     {cat.items.map((item,ii)=>{
@@ -1765,7 +1595,7 @@ export default function WeddingPlanner() {
                           {isEditingThis?(
                             <input autoFocus value={editCheckText} onChange={e=>setEditCheckText(e.target.value)}
                               onBlur={()=>saveCheckEdit(ci,ii)} onKeyDown={e=>{if(e.key==="Enter")saveCheckEdit(ci,ii);if(e.key==="Escape")setEditingCheck(null);}}
-                              style={{...inp(),flex:1,fontSize:12,borderBottom:"1px solid #6366f1",paddingBottom:2,color:"#0f1117"}}/>
+                              style={{...inp(),flex:1,fontSize:12,borderBottom:"1px solid #6366f1",paddingBottom:2,color:"#0f0f1a"}}/>
                           ):(
                             <span style={{fontSize:12,color:item.done?"#9ca3af":"#374151",textDecoration:item.done?"line-through":"none",flex:1,lineHeight:1.4,cursor:"text"}}
                               onClick={()=>{setEditingCheck({ci,ii});setEditCheckText(item.text);}}>
@@ -1807,12 +1637,12 @@ export default function WeddingPlanner() {
               ))}
             </div>
             <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14,alignItems:"center"}}>
-              <input placeholder="Search…" value={guestSearch} onChange={e=>setGuestSearch(e.target.value)} style={{...inp(),background:"#f5f6fa",border:"1px solid #e5e7eb",borderRadius:8,padding:"6px 12px",width:140,fontSize:12}}/>
-              <select value={guestFilter} onChange={e=>setGuestFilter(e.target.value)} style={{background:"#f5f6fa",border:"1px solid #e5e7eb",color:"#111827",borderRadius:8,padding:"6px 10px",fontSize:11,fontFamily:"inherit",cursor:"pointer"}}>
+              <input placeholder="Search…" value={guestSearch} onChange={e=>setGuestSearch(e.target.value)} style={{...inp(),background:"#f9f9fc",border:"1px solid #e5e7eb",borderRadius:8,padding:"6px 12px",width:140,fontSize:12}}/>
+              <select value={guestFilter} onChange={e=>setGuestFilter(e.target.value)} style={{background:"#f9f9fc",border:"1px solid #e5e7eb",color:"#111827",borderRadius:8,padding:"6px 10px",fontSize:11,fontFamily:"inherit",cursor:"pointer"}}>
                 <option value="all">All</option>
                 {["Confirmed","Pending","Declined","Not Sent","Bride","Groom","Both"].map(f=><option key={f} value={f}>{f}</option>)}
               </select>
-              <select value={guestSort} onChange={e=>setGuestSort(e.target.value)} style={{background:"#f5f6fa",border:"1px solid #e5e7eb",color:"#111827",borderRadius:8,padding:"6px 10px",fontSize:11,fontFamily:"inherit",cursor:"pointer"}}>
+              <select value={guestSort} onChange={e=>setGuestSort(e.target.value)} style={{background:"#f9f9fc",border:"1px solid #e5e7eb",color:"#111827",borderRadius:8,padding:"6px 10px",fontSize:11,fontFamily:"inherit",cursor:"pointer"}}>
                 <option value="name">Sort: Name</option>
                 <option value="table">Sort: Table</option>
                 <option value="rsvp">Sort: RSVP</option>
@@ -1826,19 +1656,19 @@ export default function WeddingPlanner() {
                   {[{l:"NAME *",f:"name",p:"Full name",t:"text"},{l:"TABLE #",f:"table",p:"e.g. 5",t:"text"},{l:"DIETARY",f:"dietary",p:"e.g. Veg",t:"text"},{l:"NOTES",f:"notes",p:"Any notes",t:"text"}].map(x=>(
                     <div key={x.f}>
                       <div style={{fontSize:9,color:"#6b7280",marginBottom:3}}>{x.l}</div>
-                      <input type={x.t} value={newGuest[x.f]} onChange={e=>setNewGuest(g=>({...g,[x.f]:e.target.value}))} placeholder={x.p} style={{...inp(),background:"#f8f9fc",border:"1px solid #e5e7eb",borderRadius:6,padding:"6px 10px",fontSize:12}}/>
+                      <input type={x.t} value={newGuest[x.f]} onChange={e=>setNewGuest(g=>({...g,[x.f]:e.target.value}))} placeholder={x.p} style={{...inp(),background:"#f9f9fc",border:"1px solid #e5e7eb",borderRadius:6,padding:"6px 10px",fontSize:12}}/>
                     </div>
                   ))}
                   <div>
                     <div style={{fontSize:9,color:"#6b7280",marginBottom:3}}>SIDE</div>
-                    <select value={newGuest.side} onChange={e=>setNewGuest(g=>({...g,side:e.target.value}))} style={{background:"#f8f9fc",border:"1px solid #e5e7eb",color:SIDE_COLORS[newGuest.side],borderRadius:6,padding:"6px 10px",fontSize:12,fontFamily:"inherit",width:"100%",cursor:"pointer"}}>
-                      {["Bride","Groom","Both"].map(s=><option key={s} value={s} style={{background:"#f8f9fc",color:SIDE_COLORS[s]}}>{s}</option>)}
+                    <select value={newGuest.side} onChange={e=>setNewGuest(g=>({...g,side:e.target.value}))} style={{background:"#f9f9fc",border:"1px solid #e5e7eb",color:SIDE_COLORS[newGuest.side],borderRadius:6,padding:"6px 10px",fontSize:12,fontFamily:"inherit",width:"100%",cursor:"pointer"}}>
+                      {["Bride","Groom","Both"].map(s=><option key={s} value={s} style={{background:"#f9f9fc",color:SIDE_COLORS[s]}}>{s}</option>)}
                     </select>
                   </div>
                   <div>
                     <div style={{fontSize:9,color:"#6b7280",marginBottom:3}}>RSVP</div>
-                    <select value={newGuest.rsvp} onChange={e=>setNewGuest(g=>({...g,rsvp:e.target.value}))} style={{background:"#f8f9fc",border:"1px solid #e5e7eb",color:RSVP_COLORS[newGuest.rsvp],borderRadius:6,padding:"6px 10px",fontSize:12,fontFamily:"inherit",width:"100%",cursor:"pointer"}}>
-                      {Object.keys(RSVP_COLORS).map(s=><option key={s} value={s} style={{background:"#f8f9fc",color:RSVP_COLORS[s]}}>{s}</option>)}
+                    <select value={newGuest.rsvp} onChange={e=>setNewGuest(g=>({...g,rsvp:e.target.value}))} style={{background:"#f9f9fc",border:"1px solid #e5e7eb",color:RSVP_COLORS[newGuest.rsvp],borderRadius:6,padding:"6px 10px",fontSize:12,fontFamily:"inherit",width:"100%",cursor:"pointer"}}>
+                      {Object.keys(RSVP_COLORS).map(s=><option key={s} value={s} style={{background:"#f9f9fc",color:RSVP_COLORS[s]}}>{s}</option>)}
                     </select>
                   </div>
                 </div>
@@ -1866,15 +1696,15 @@ export default function WeddingPlanner() {
                 {filteredGuests.map(g=>(
                   <div key={g.id} style={{display:"grid",gridTemplateColumns:"1fr auto auto auto auto auto 24px",alignItems:"center",gap:10,background:"#ffffff",border:"1px solid #f3f4f6",borderRadius:9,padding:"10px 14px"}}>
                     <div>
-                      <div style={{fontSize:13,color:"#0f1117",fontWeight:600}}>{g.name}</div>
+                      <div style={{fontSize:13,color:"#0f0f1a",fontWeight:600}}>{g.name}</div>
                       {g.dietary&&<div style={{fontSize:10,color:"#6b7280",marginTop:1}}>🍽 {g.dietary}</div>}
                       {g.notes&&<div style={{fontSize:10,color:"#6b7280",marginTop:1}}>💬 {g.notes}</div>}
                     </div>
                     <select value={g.side} onChange={e=>updateGuest(g.id,"side",e.target.value)} style={{background:"transparent",border:"none",color:SIDE_COLORS[g.side],fontSize:11,fontFamily:"inherit",cursor:"pointer"}}>
-                      {["Bride","Groom","Both"].map(s=><option key={s} value={s} style={{background:"#f1f3f8",color:SIDE_COLORS[s]}}>{s}</option>)}
+                      {["Bride","Groom","Both"].map(s=><option key={s} value={s} style={{background:"#f1f1f6",color:SIDE_COLORS[s]}}>{s}</option>)}
                     </select>
-                    <select value={g.rsvp} onChange={e=>updateGuest(g.id,"rsvp",e.target.value)} style={{background:"#f1f3f8",color:RSVP_COLORS[g.rsvp],border:`1px solid ${RSVP_COLORS[g.rsvp]}`,borderRadius:99,padding:"2px 9px",fontSize:10,fontFamily:"inherit",cursor:"pointer"}}>
-                      {Object.keys(RSVP_COLORS).map(s=><option key={s} value={s} style={{background:"#f1f3f8",color:RSVP_COLORS[s]}}>{s}</option>)}
+                    <select value={g.rsvp} onChange={e=>updateGuest(g.id,"rsvp",e.target.value)} style={{background:"#f1f1f6",color:RSVP_COLORS[g.rsvp],border:`1px solid ${RSVP_COLORS[g.rsvp]}`,borderRadius:99,padding:"2px 9px",fontSize:10,fontFamily:"inherit",cursor:"pointer"}}>
+                      {Object.keys(RSVP_COLORS).map(s=><option key={s} value={s} style={{background:"#f1f1f6",color:RSVP_COLORS[s]}}>{s}</option>)}
                     </select>
                     <div style={{fontSize:11,color:"#6b7280"}}>Tbl <input value={g.table} onChange={e=>updateGuest(g.id,"table",e.target.value)} style={{...inp(),width:28,fontSize:11,color:"#111827",display:"inline"}}/></div>
                     <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
@@ -1900,7 +1730,7 @@ export default function WeddingPlanner() {
               <div style={{fontSize:11,color:"#6b7280",marginBottom:10}}>Shared updates, decisions, and questions for the whole group.</div>
               <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
                 <textarea value={newNote} onChange={e=>setNewNote(e.target.value)} placeholder={`Write a note as ${userName}…`} rows={3}
-                  style={{...inp(),flex:1,background:"#f5f6fa",border:"1px solid #e5e7eb",borderRadius:10,padding:"10px 14px",fontSize:13,resize:"vertical",lineHeight:1.5}}/>
+                  style={{...inp(),flex:1,background:"#f9f9fc",border:"1px solid #e5e7eb",borderRadius:10,padding:"10px 14px",fontSize:13,resize:"vertical",lineHeight:1.5}}/>
                 <button onClick={addNote} style={{background:"#111827",color:"#ffffff",border:"none",borderRadius:8,padding:"10px 16px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:700,whiteSpace:"nowrap"}}>Post</button>
               </div>
             </div>
@@ -1909,7 +1739,7 @@ export default function WeddingPlanner() {
             ):(
               <div style={{display:"flex",flexDirection:"column",gap:10}}>
                 {notes.map(n=>{
-                  const col=AUTHOR_COLORS[n.author]||"#B8860B";
+                  const col=AUTHOR_COLORS[n.author]||"#4F46E5";
                   return(
                     <div key={n.id} style={{background:"#ffffff",border:`1px solid ${col}33`,borderLeft:`3px solid ${col}`,borderRadius:10,padding:"14px 16px",position:"relative"}}>
                       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
