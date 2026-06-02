@@ -670,7 +670,7 @@ function LoginScreen({ nameInput, setNameInput, setUserName }: any) {
       <div style={{ position:"absolute", top:"30%", right:"-5%", width:400, height:400, borderRadius:"50%", background:"radial-gradient(circle, rgba(14,165,233,0.14) 0%, transparent 70%)", zIndex:0, filter:"blur(40px)" }}/>
 
       {/* ── Left panel: photo carousel ── */}
-      <div style={{ className:"login-photo-panel", style:{{flex:"0 0 48%", position:"relative", overflow:"hidden", zIndex:1, margin:"24px 0 24px 24px", borderRadius:24, boxShadow:"0 24px 80px rgba(79,70,229,0.20)"}} }}>
+      <div className="login-photo-panel" style={{ flex:"0 0 48%", position:"relative", overflow:"hidden", zIndex:1, margin:"24px 0 24px 24px", borderRadius:24, boxShadow:"0 24px 80px rgba(79,70,229,0.20)" }}>
         {PHOTO_LIST.map((src, i) => (
           <div key={i} style={{
             position:"absolute", inset:0,
@@ -719,7 +719,7 @@ function LoginScreen({ nameInput, setNameInput, setUserName }: any) {
               <span style={{ fontSize:11, fontWeight:700, color:"#4F46E5", letterSpacing:0.5, textTransform:"uppercase" }}>Spring 2027 · Portugal</span>
             </div>
             <h1 style={{ margin:"0 0 10px", fontSize:38, fontWeight:800, letterSpacing:-1.5, lineHeight:1.05, background:"linear-gradient(135deg,#0f0f1a 0%,#4F46E5 60%,#7C3AED 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
-              Your wedding,<br/>perfectly planned.
+              Our wedding,<br/>perfectly planned.
             </h1>
             <p style={{ color:"#8888aa", fontSize:14, margin:0, lineHeight:1.65, fontWeight:400 }}>
               Budget, vendors, guests, timelines — all in one place for the whole family.
