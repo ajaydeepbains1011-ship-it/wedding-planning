@@ -1,6 +1,130 @@
 import { useState, useEffect, useRef } from "react";
 
 // ─────────────────────────────────────────────────────────────────────────────
+// SUPABASE CONFIG
+// ─────────────────────────────────────────────────────────────────────────────
+const SUPABASE_URL = "https://fnluwlvosijscqlxwsqt.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZubHV3bHZvc2lqc2NxbHh3c3F0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzOTg1MzIsImV4cCI6MjA5NTk3NDUzMn0.pOw_GNDrDud7hHFSotaY2ckFHvAbCfohVuNNr6LwTrE";
+const BUCKET = "wedding-files";
+
+async function uploadFile(file: File, path: string): Promise<string | null> {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${SUPABASE_KEY}`, "Content-Type": file.type },
+      body: file,
+    });
+    if (!res.ok) return null;
+    return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
+  } catch { return null; }
+}
+
+async function listFiles(folder: string): Promise<{name: string, url: string}[]> {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${BUCKET}`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ prefix: folder, limit: 100 }),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data || []).map((f: any) => ({
+      name: f.name,
+      url: `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${folder}/${f.name}`,
+    }));
+  } catch { return []; }
+}
+
+async function deleteFile(path: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${SUPABASE_KEY}` },
+    });
+    return res.ok;
+  } catch { return false; }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FILE UPLOAD COMPONENT
+// ─────────────────────────────────────────────────────────────────────────────
+function VendorFiles({ vendorId, vendorName }: { vendorId: number | string, vendorName: string }) {
+  const [files, setFiles] = useState<{name: string, url: string}[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const folder = `vendor-${vendorId}`;
+
+  useEffect(() => {
+    if (expanded) listFiles(folder).then(setFiles);
+  }, [expanded, folder]);
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const path = `${folder}/${Date.now()}-${file.name}`;
+    const url = await uploadFile(file, path);
+    if (url) setFiles(prev => [...prev, { name: file.name, url }]);
+    setUploading(false);
+    if (inputRef.current) inputRef.current.value = "";
+  }
+
+  async function handleDelete(file: {name: string, url: string}) {
+    await deleteFile(`${folder}/${file.name}`);
+    setFiles(prev => prev.filter(f => f.name !== file.name));
+  }
+
+  function fileIcon(name: string) {
+    const ext = name.split(".").pop()?.toLowerCase();
+    if (["jpg","jpeg","png","gif","webp"].includes(ext||"")) return "🖼";
+    if (ext === "pdf") return "📄";
+    if (["doc","docx"].includes(ext||"")) return "📝";
+    if (["xls","xlsx"].includes(ext||"")) return "📊";
+    return "📎";
+  }
+
+  return (
+    <div style={{ marginTop: 4 }}>
+      <button onClick={() => setExpanded(v => !v)} style={{
+        background: "none", border: "1px solid #2A3A4A", borderRadius: 6,
+        color: "#8A9DB0", fontSize: 10, padding: "2px 8px", cursor: "pointer",
+        fontFamily: "inherit", display: "flex", alignItems: "center", gap: 4,
+      }}>
+        📎 {files.length > 0 ? `${files.length} file${files.length > 1 ? "s" : ""}` : "Files"} {expanded ? "▲" : "▼"}
+      </button>
+      {expanded && (
+        <div style={{ marginTop: 6, background: "#0F1923", border: "1px solid #1E2D3D", borderRadius: 8, padding: "8px 10px" }}>
+          {files.length === 0 && !uploading && (
+            <div style={{ fontSize: 10, color: "#4A5A6A", marginBottom: 6 }}>No files yet — upload contracts, quotes, inspiration</div>
+          )}
+          {files.map(f => (
+            <div key={f.name} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+              <span style={{ fontSize: 12 }}>{fileIcon(f.name)}</span>
+              <a href={f.url} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#B8860B", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {f.name.replace(/^\d+-/, "")}
+              </a>
+              <button onClick={() => handleDelete(f)} style={{ background: "none", border: "none", color: "#3A4A5A", cursor: "pointer", fontSize: 12, padding: 0 }}>×</button>
+            </div>
+          ))}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+            <input ref={inputRef} type="file" onChange={handleUpload} style={{ display: "none" }} id={`fu-${vendorId}`}/>
+            <label htmlFor={`fu-${vendorId}`} style={{
+              background: "#1A2535", border: "1px dashed #2A3A4A", borderRadius: 6,
+              color: uploading ? "#4A5A6A" : "#8A9DB0", fontSize: 10, padding: "3px 10px",
+              cursor: uploading ? "default" : "pointer",
+            }}>
+              {uploading ? "Uploading…" : "+ Upload file"}
+            </label>
+            <span style={{ fontSize: 9, color: "#4A5A6A" }}>PDF, image, doc — max 50MB</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -755,7 +879,9 @@ export default function WeddingPlanner() {
                           {Object.keys(STATUS_COLORS).map(s=><option key={s} value={s} style={{background:"#1C2A3A",color:STATUS_COLORS[s]}}>{s}</option>)}
                         </select>
                       </td>
-                      <td style={{padding:"7px 9px"}}><input value={v.notes} onChange={e=>updateVendor(v.id,"notes",e.target.value)} style={{...inp(),width:150,color:"#8A9DB0"}} placeholder="Notes…"/></td>
+                      <td style={{padding:"7px 9px"}}><input value={v.notes} onChange={e=>updateVendor(v.id,"notes",e.target.value)} style={{...inp(),width:150,color:"#8A9DB0"}} placeholder="Notes…"/>
+                        <VendorFiles vendorId={v.id} vendorName={v.name}/>
+                      </td>
                       <td style={{padding:"7px 9px"}}><button onClick={()=>deleteVendor(v.id)} style={{background:"none",border:"none",color:"#3A4A5A",cursor:"pointer",fontSize:15}}>×</button></td>
                     </tr>
                   ))}
