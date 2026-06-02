@@ -982,8 +982,29 @@ function fmtEUR(n) { return `€${Number(n||0).toLocaleString("en-US",{minimumFr
 function uid()     { return "u"+Math.random().toString(36).slice(2,9); }
 function eurToUsd(eur, rate) { return eur * rate; }
 
-async function sharedSave(key,val) { try{ await window.storage.set(key,JSON.stringify(val),true); }catch(e){} }
-async function sharedLoad(key,fallback) { try{ const r=await window.storage.get(key,true); return r?JSON.parse(r.value):fallback; }catch(e){ return fallback; } }
+async function sharedSave(key,val) {
+  const serialized = JSON.stringify(val);
+  try { localStorage.setItem(key, serialized); } catch(e) {}
+  try {
+    const storageApi = (window as any).storage;
+    if (storageApi?.set) await storageApi.set(key, serialized, true);
+  } catch(e) {}
+}
+async function sharedLoad(key,fallback) {
+  try {
+    const storageApi = (window as any).storage;
+    if (storageApi?.get) {
+      const r = await storageApi.get(key, true);
+      if (r?.value) return JSON.parse(r.value);
+    }
+  } catch(e) {}
+  try {
+    const local = localStorage.getItem(key);
+    return local ? JSON.parse(local) : fallback;
+  } catch(e) {
+    return fallback;
+  }
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // APP
@@ -1129,8 +1150,18 @@ export default function WeddingPlanner() {
   function toggleGuestEvent(id,evId){setGuests(p=>p.map(g=>g.id!==id?g:{...g,events:g.events.includes(evId)?g.events.filter(e=>e!==evId):[...g.events,evId]}));}
 
   // ── Notes ──
-  function addNote(){if(!newNote.trim())return;setNotes(p=>[{id:uid(),text:newNote,author:userName||"Anonymous",ts:new Date().toISOString()},...p]);setNewNote("");}
-  function deleteNote(id){setNotes(p=>p.filter(n=>n.id!==id));}
+  function addNote(){
+    const text = newNote.trim();
+    if(!text)return;
+    const note = {id:uid(),text,author:userName||"Anonymous",ts:new Date().toISOString()};
+    setNotes(p=>{
+      const updated=[note,...p];
+      sharedSave("wp_notes",updated);
+      return updated;
+    });
+    setNewNote("");
+  }
+  function deleteNote(id){setNotes(p=>{const updated=p.filter(n=>n.id!==id);sharedSave("wp_notes",updated);return updated;});}
 
   // ── Derived ──
   const totalBudgetAll  = Object.values(budget).reduce((s,e)=>s+e.total,0);
@@ -1941,9 +1972,9 @@ export default function WeddingPlanner() {
             <div style={{marginBottom:16}}>
               <div style={{fontSize:11,color:"#6b7280",marginBottom:10}}>Shared updates, decisions, and questions for the whole group.</div>
               <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
-                <textarea value={newNote} onChange={e=>setNewNote(e.target.value)} placeholder={`Write a note as ${userName}…`} rows={3}
+                <textarea value={newNote} onChange={e=>setNewNote(e.target.value)} onKeyDown={e=>{ if((e.metaKey||e.ctrlKey)&&e.key==="Enter") addNote(); }} placeholder={`Write a note as ${userName || "Anonymous"}…`} rows={3}
                   style={{...inp(),flex:1,background:"#f9f9fc",border:"1px solid #e5e7eb",borderRadius:10,padding:"10px 14px",fontSize:13,resize:"vertical",lineHeight:1.5}}/>
-                <button onClick={addNote} style={{background:"#111827",color:"#ffffff",border:"none",borderRadius:8,padding:"10px 16px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:700,whiteSpace:"nowrap"}}>Post</button>
+                <button onClick={addNote} style={{background:"linear-gradient(135deg,#4F46E5,#7C3AED)",color:"#ffffff",border:"none",borderRadius:10,padding:"10px 18px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:800,whiteSpace:"nowrap",boxShadow:"0 6px 18px rgba(79,70,229,0.25)"}}>Post</button>
               </div>
             </div>
             {notes.length===0?(
