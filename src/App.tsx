@@ -805,7 +805,7 @@ function LoginScreen({ nameInput, setNameInput, setUserName }: any) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const DEFAULT_EVENTS = [
-  { id:"haldi",     label:"Haldi / Vatna", emoji:"🌾", date:"2027-04-22", color:"#D97706", stakes:"low"  },
+  { id:"vatna",     label:"Vatna Ceremony", emoji:"🌾", date:"2027-04-22", color:"#D97706", stakes:"low"  },
   { id:"welcome",   label:"Welcome Party", emoji:"🥂", date:"2027-04-23", color:"#DC2626", stakes:"high" },
   { id:"sangeet",   label:"Sangeet",       emoji:"🎵", date:"2027-04-24", color:"#7C3AED", stakes:"high" },
   { id:"wedding",   label:"Wedding",       emoji:"💍", date:"2027-04-25", color:"#1D4ED8", stakes:"high" },
@@ -816,7 +816,7 @@ const DEFAULT_EVENTS = [
 const DEFAULT_EUR_RATE = 1.09;
 
 const DEFAULT_BUDGET = {
-  haldi:     { total:15000,  items:[{name:"Florals & Turmeric Setup",cost:4000},{name:"Photographer",cost:3000},{name:"Catering (light)",cost:4000},{name:"Outfits",cost:2500},{name:"Misc",cost:1500}]},
+  vatna:     { total:15000,  items:[{name:"Vatna Florals & Setup",cost:4000},{name:"Photographer",cost:3000},{name:"Catering (light)",cost:4000},{name:"Outfits",cost:2500},{name:"Misc",cost:1500}]},
   welcome:   { total:60000,  items:[{name:"Venue",cost:18000},{name:"Catering & Bar",cost:20000},{name:"DJ / Music",cost:7000},{name:"Décor & Lighting",cost:8000},{name:"Photography",cost:5000},{name:"Misc",cost:2000}]},
   sangeet:   { total:90000,  items:[{name:"Venue",cost:22000},{name:"Stage & AV",cost:12000},{name:"Choreographer",cost:8000},{name:"Catering & Bar",cost:25000},{name:"Décor & Lighting",cost:12000},{name:"Photography/Video",cost:8000},{name:"Dhol & Live Music",cost:5000},{name:"Misc",cost:3000}]},
   wedding:   { total:220000, items:[{name:"Venue",cost:55000},{name:"Catering",cost:55000},{name:"Anand Karaj & Décor",cost:30000},{name:"Bhai Ji",cost:5000},{name:"Photography/Video",cost:25000},{name:"Bridal HMU",cost:8000},{name:"Bridal Outfit",cost:15000},{name:"Groom Outfit",cost:8000},{name:"Transport & Logistics",cost:6000},{name:"Florals",cost:10000},{name:"Jewelry",cost:12000},{name:"Misc",cost:6000}]},
@@ -841,7 +841,7 @@ const DEFAULT_VENDORS = [
   { id:8,  event:"all",       category:"Videography",     name:"TBD",               contact:"", costEur:13761, depositEur:0, status:"Research", notes:"Cinematic full-week coverage" },
   { id:9,  event:"wedding",   category:"Catering",        name:"TBD",               contact:"", costEur:50459, depositEur:0, status:"Research", notes:"Indian + Portuguese fusion" },
   { id:10, event:"sangeet",   category:"Choreographer",   name:"TBD",               contact:"", costEur:7339,  depositEur:0, status:"Research", notes:"" },
-  { id:11, event:"wedding",   category:"Bhai Ji",          name:"TBD",               contact:"", costEur:4587,  depositEur:0, status:"Research", notes:"Fly in from UK/Canada" },
+  { id:11, event:"wedding",   category:"Bhai Ji",          name:"TBD",               contact:"", costEur:4587,  depositEur:0, status:"Research", notes:"Fly in from UK/Canada — Granthi for Anand Karaj" },
   { id:12, event:"all",       category:"Florals",         name:"TBD",               contact:"", costEur:9174,  depositEur:0, status:"Research", notes:"Marigold sourcing in Portugal" },
   { id:13, event:"wedding",   category:"Bridal HMU",      name:"TBD",               contact:"", costEur:7339,  depositEur:0, status:"Research", notes:"Include trials" },
   { id:14, event:"sangeet",   category:"Dhol & Music",    name:"TBD",               contact:"", costEur:4587,  depositEur:0, status:"Research", notes:"" },
@@ -868,7 +868,7 @@ const DEFAULT_KANBAN = {
     { id:"k17", title:"Design wedding website",                event:"all",       priority:"med",  due:"2026-09" },
     { id:"k18", title:"Order bridal lehenga",                  event:"wedding",   priority:"high", due:"2026-10" },
     { id:"k19", title:"Order groom sherwani",                  event:"wedding",   priority:"high", due:"2026-10" },
-    { id:"k20", title:"Haldi setup plan",                      event:"haldi",     priority:"low",  due:"2027-01" },
+    { id:"k20", title:"Vatna setup plan",                      event:"vatna",     priority:"low",  due:"2027-01" },
     { id:"k21", title:"Welcome party DJ",                      event:"welcome",   priority:"med",  due:"2026-11" },
     { id:"k22", title:"Reception band / DJ",                   event:"reception", priority:"med",  due:"2026-11" },
     { id:"k23", title:"Design invitation suite",               event:"all",       priority:"med",  due:"2026-11" },
@@ -894,7 +894,7 @@ const DEFAULT_CHECKLIST = [
   { category:"Venues", items:[
     {id:"c10", text:"Shortlist & visit wedding venues in Portugal", done:false},
     {id:"c11", text:"Confirm catering exclusivity rules at each venue", done:false},
-    {id:"c12", text:"Confirm space for Anand Karaj/pheras setup", done:false},
+    {id:"c12", text:"Confirm space for Anand Karaj setup", done:false},
     {id:"c13", text:"Book all 5 event venues", done:false},
     {id:"c14", text:"Arrange hotel room block for guests near venues", done:false},
     {id:"c15", text:"Confirm AV/stage capabilities for sangeet venue", done:false},
@@ -931,9 +931,9 @@ const DEFAULT_CHECKLIST = [
     {id:"c57", text:"Seating charts done for all events", done:false},
   ]},
   { category:"Ceremony Details", items:[
-    {id:"c60", text:"Confirm all rituals with Bhai Ji (Anand Karaj or pheras)", done:false},
-    {id:"c61", text:"Anand Karaj design finalized", done:false},
-    {id:"c62", text:"Doli/baraat plan finalized", done:false},
+    {id:"c60", text:"Confirm ceremony details with Bhai Ji (Anand Karaj)", done:false},
+    {id:"c61", text:"Anand Karaj setup finalized", done:false},
+    {id:"c62", text:"Doli / baraat plan finalized", done:false},
     {id:"c63", text:"Wedding program/order of service designed", done:false},
     {id:"c64", text:"Milni ceremony logistics planned", done:false},
     {id:"c65", text:"Chooda & kalire ceremony planned", done:false},
@@ -945,12 +945,12 @@ const DEFAULT_CHECKLIST = [
     {id:"c73", text:"Dhol player confirmed for sangeet", done:false},
     {id:"c74", text:"Sangeet emcee confirmed", done:false},
   ]},
-  { category:"Haldi / Vatna", items:[
-    {id:"c80", text:"Haldi venue/home setup confirmed", done:false},
+  { category:"Vatna", items:[
+    {id:"c80", text:"Vatna setup confirmed", done:false},
     {id:"c81", text:"Ubtan ingredients sourced", done:false},
     {id:"c82", text:"Yellow & floral décor plan ready", done:false},
     {id:"c83", text:"Light catering / snacks arranged", done:false},
-    {id:"c84", text:"Photographer for haldi confirmed", done:false},
+    {id:"c84", text:"Photographer for Vatna confirmed", done:false},
   ]},
   { category:"Portugal Logistics", items:[
     {id:"c90", text:"Group flights coordinated or communicated", done:false},
