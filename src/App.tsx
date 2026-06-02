@@ -1125,8 +1125,8 @@ function PasscodeGate({ children }: any) {
 
         {/* Photo */}
         <div style={{textAlign:"center",marginBottom:28}}>
-          <div style={{width:90,height:90,borderRadius:24,margin:"0 auto 16px",overflow:"hidden",boxShadow:"0 12px 32px rgba(79,70,229,0.25)",border:"3px solid rgba(255,255,255,0.8)"}}>
-            <img src={PHOTOS.p8} alt="Ajay & Bianca" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top"}}/>
+          <div style={{width:120,height:140,borderRadius:28,margin:"0 auto 16px",overflow:"hidden",boxShadow:"0 16px 40px rgba(79,70,229,0.22)",border:"3px solid rgba(255,255,255,0.9)"}}>
+            <img src={PHOTOS.p8} alt="Ajay & Bianca" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 20%"}}/>
           </div>
           <h1 style={{margin:"0 0 6px",fontSize:26,fontWeight:800,letterSpacing:-1,color:"#0f0f1a"}}>Ajay & Bianca</h1>
           <p style={{margin:0,fontSize:13,color:"#8888aa",fontWeight:500}}>Enter the passcode to continue</p>
