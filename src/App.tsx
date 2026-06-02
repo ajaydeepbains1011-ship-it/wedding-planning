@@ -1075,7 +1075,7 @@ export default function WeddingPlanner() {
     {id:"guests",label:`Guests (${guests.length})`},{id:"notes",label:`Notes (${notes.length})`},
     {id:"gmail",label:"📧 Gmail"},
   ];
-  const inp=(extra={})=>({background:"transparent",border:"none",color:"#0f0f1a",fontSize:13,fontFamily:"Inter,-apple-system,BlinkMacSystemFont,sans-serif",outline:"none",width:"100%",...extra});
+  const inp=(extra={})=>({background:"transparent",border:"none",color:"#0f0f1a",fontSize:13,fontFamily:"'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif",outline:"none",width:"100%",...extra});
   const card=(extra={})=>({background:"#ffffff",border:"1px solid #e5e7eb",borderRadius:12,padding:"16px 18px",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",...extra});
 
   // ── Name gate ──
@@ -1097,22 +1097,45 @@ export default function WeddingPlanner() {
   );
 
   return(
-    <div style={{minHeight:"100vh",background:"#f4f4f8",fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",color:"#111827"}}>
+    <div style={{minHeight:"100vh",background:"#f4f4f8",fontFamily:"'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",color:"#111827"}}>
 
       {/* HEADER */}
       <div style={{background:"linear-gradient(135deg,#ffffff 0%,#fafafe 100%)",borderBottom:"1px solid #e4e4ef",padding:"14px 24px 0",position:"sticky",top:0,zIndex:100,boxShadow:"0 1px 20px rgba(79,70,229,0.07)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12,maxWidth:1200,margin:"0 auto"}}>
           {/* Left: brand + dates */}
-          <div style={{display:"flex",alignItems:"center",gap:16}}>
-            {/* Photo chips */}
-            <div style={{display:"flex",alignItems:"center"}}>
-              {[PHOTOS.p2,PHOTOS.p5,PHOTOS.p3].map((src,i)=>(
-                <img key={i} src={src} className="photo-chip" style={{marginLeft:i===0?0:-10,zIndex:3-i}} alt=""/>
-              ))}
+          <div style={{display:"flex",alignItems:"center",gap:14}}>
+            {/* Infinite scroll photo strip */}
+            <div style={{width:120,height:40,borderRadius:10,overflow:"hidden",position:"relative",flexShrink:0}}>
+              <style>{`
+                @keyframes scroll-photos {
+                  0% { transform: translateX(0); }
+                  100% { transform: translateX(-50%); }
+                }
+                .photo-scroll-inner {
+                  display: flex;
+                  animation: scroll-photos 12s linear infinite;
+                  width: max-content;
+                }
+                .photo-scroll-inner img {
+                  width: 40px;
+                  height: 40px;
+                  object-fit: cover;
+                  object-position: top;
+                  border-radius: 8px;
+                  flex-shrink: 0;
+                  margin-right: 4px;
+                  border: 1.5px solid #fff;
+                }
+              `}</style>
+              <div className="photo-scroll-inner">
+                {[...PHOTO_LIST,...PHOTO_LIST].map((src,i)=>(
+                  <img key={i} src={src} alt=""/>
+                ))}
+              </div>
             </div>
             <div>
-              <div style={{fontSize:16,fontWeight:700,color:"#111827",letterSpacing:-0.5,lineHeight:1}}>Ajay & Bianca</div>
-              <div style={{fontSize:11,color:"#9ca3af",marginTop:3,letterSpacing:-0.1}}>Portugal · Spring 2027 · $500K</div>
+              <div style={{fontSize:15,fontWeight:800,color:"#0f0f1a",letterSpacing:-0.5,lineHeight:1}}>Ajay & Bianca</div>
+              <div style={{fontSize:11,color:"#8888aa",marginTop:3,letterSpacing:-0.1,fontWeight:500}}>Portugal · Spring 2027 · $500K</div>
             </div>
           </div>
 
@@ -1160,16 +1183,16 @@ export default function WeddingPlanner() {
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:20}}>
               {[
                 {label:"Total Budget",    value:"$500,000",                           sub:"overall target"},
-                {label:"Total Paid (€)",  value:fmtEUR(totalPaidEur),                col:"#F59E0B",sub:fmtUSD(totalPaidUsd)+" USD"},
-                {label:"Ajay's Family",   value:fmtEUR(ajayPaidEur),                 col:"#1A7FC1",sub:fmtUSD(eurToUsd(ajayPaidEur,eurRate))+" USD"},
-                {label:"Bianca's Family", value:fmtEUR(biancaPaidEur),               col:"#8E44AD",sub:fmtUSD(eurToUsd(biancaPaidEur,eurRate))+" USD"},
+                {label:"Total Paid (€)",  value:fmtEUR(totalPaidEur),                col:"#B45309",sub:fmtUSD(totalPaidUsd)+" USD"},
+                {label:"Ajay's Family",   value:fmtEUR(ajayPaidEur),                 col:"#1D4ED8",sub:fmtUSD(eurToUsd(ajayPaidEur,eurRate))+" USD"},
+                {label:"Bianca's Family", value:fmtEUR(biancaPaidEur),               col:"#7C3AED",sub:fmtUSD(eurToUsd(biancaPaidEur,eurRate))+" USD"},
                 {label:"Tasks Left",      value:tasksLeft,                             sub:"kanban items"},
                 {label:"Checklist",       value:`${checkDone}/${checkTotal}`,          sub:"items done"},
               ].map(c=>(
                 <div key={c.label} className="stat-card fade-up">
-                  <div style={{fontSize:10,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.8}}>{c.label}</div>
-                  <div style={{fontSize:22,fontWeight:700,color:c.col||"#F5ECD7",margin:"5px 0 2px"}}>{c.value}</div>
-                  <div style={{fontSize:10,color:"#6b7280"}}>{c.sub}</div>
+                  <div style={{fontSize:10,fontWeight:700,color:"#6666aa",textTransform:"uppercase",letterSpacing:0.8}}>{c.label}</div>
+                  <div style={{fontSize:22,fontWeight:700,color:c.col||"#0f0f1a",margin:"5px 0 2px"}}>{c.value}</div>
+                  <div style={{fontSize:10,color:"#4a4a6a",fontWeight:500}}>{c.sub}</div>
                 </div>
               ))}
             </div>
@@ -1178,7 +1201,7 @@ export default function WeddingPlanner() {
             <div className="card" style={{marginBottom:18,padding:"20px 22px"}}>
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
                 <span style={{fontSize:11,color:"#9ca3af",fontWeight:600,textTransform:"uppercase",letterSpacing:0.5}}>Budget Allocation vs $500K</span>
-                <span style={{fontSize:11,color:totalBudgetAll>500000?"#EF4444":"#10B981"}}>${totalBudgetAll.toLocaleString()} / $500,000</span>
+                <span style={{fontSize:11,color:totalBudgetAll>500000?"#EF4444":"#059669",fontWeight:700}}>${totalBudgetAll.toLocaleString()} <span style={{fontWeight:400,opacity:0.7}}>/ $500,000</span></span>
               </div>
               <div style={{display:"flex",height:12,borderRadius:99,overflow:"hidden",gap:2}}>
                 {events.map(ev=>{const pct=(budget[ev.id].total/500000)*100;return<div key={ev.id} title={`${ev.label}: $${budget[ev.id].total.toLocaleString()}`} style={{width:`${pct}%`,background:ev.color,minWidth:pct>0?2:0}}/>;  })}
@@ -1197,7 +1220,7 @@ export default function WeddingPlanner() {
             {/* Event timeline with editable dates */}
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"18px 0 10px"}}>
               <h2 style={{fontSize:10,fontWeight:800,color:"#4F46E5",textTransform:"uppercase",margin:0,letterSpacing:1.2}}>Event Timeline</h2>
-              <span style={{fontSize:10,color:"#9ca3af"}}>Click a date to edit</span>
+              <span style={{fontSize:10,color:"#8888aa",fontStyle:"italic"}}>✏️ Tap any date to edit</span>
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
               {events.map((ev,i)=>(
@@ -1426,11 +1449,11 @@ export default function WeddingPlanner() {
         {tab==="vendors" && (
           <div>
             <div style={{background:"#f9f9fc",border:"1px solid #e5e7eb",borderRadius:9,padding:"10px 16px",marginBottom:16,fontSize:11,color:"#6b7280"}}>
-              💡 Vendor costs are shown in <strong style={{color:"#111827"}}>EUR</strong> since you're paying Portuguese vendors in euros. USD equivalent shown alongside.
+              💡 All vendor costs in <strong style={{color:"#4F46E5",fontWeight:700}}>EUR</strong> — USD equivalent shown alongside. Add deposits to track what's already committed.
             </div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
               <h2 style={{margin:0,fontSize:11,letterSpacing:3,color:"#111827",textTransform:"uppercase",fontWeight:400}}>Vendor Tracker</h2>
-              <button onClick={addVendor} className="primary-btn">+ Add Vendor</button>
+              <button onClick={addVendor} className="primary-btn">+ Add Vendor →</button>
             </div>
             <div style={{overflowX:"auto"}}>
               <table className="vendor-table" style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
@@ -1449,7 +1472,7 @@ export default function WeddingPlanner() {
                           {[...events.map(e=>({id:e.id,label:e.label})),{id:"all",label:"All Events"}].map(ev=><option key={ev.id} value={ev.id} style={{background:"#f1f1f6"}}>{ev.label}</option>)}
                         </select>
                       </td>
-                      <td style={{padding:"7px 9px"}}><input value={v.category} onChange={e=>updateVendor(v.id,"category",e.target.value)} style={{...inp(),width:85}}/></td>
+                      <td style={{padding:"7px 9px"}}><input value={v.category} onChange={e=>updateVendor(v.id,"category",e.target.value)} style={{...inp(),width:130}}/></td>
                       <td style={{padding:"7px 9px"}}><input value={v.name} onChange={e=>updateVendor(v.id,"name",e.target.value)} style={{...inp(),width:120,fontWeight:600}}/></td>
                       <td style={{padding:"7px 9px"}}><input value={v.contact} onChange={e=>updateVendor(v.id,"contact",e.target.value)} style={{...inp(),width:130,color:"#6b7280"}}/></td>
                       <td style={{padding:"7px 9px"}}>
@@ -1458,14 +1481,14 @@ export default function WeddingPlanner() {
                           <input type="number" value={v.costEur} onChange={e=>updateVendor(v.id,"costEur",e.target.value)} style={{...inp(),width:65}}/>
                         </div>
                       </td>
-                      <td style={{padding:"7px 9px",color:"#4A6A4A",fontSize:10}}>{fmtUSD(eurToUsd(v.costEur,eurRate))}</td>
+                      <td style={{padding:"7px 9px",color:"#374151",fontSize:10}}>{fmtUSD(eurToUsd(v.costEur,eurRate))}</td>
                       <td style={{padding:"7px 9px"}}>
                         <div style={{display:"flex",alignItems:"center",gap:1}}>
                           <span style={{color:"#F59E0B",fontSize:9}}>€</span>
                           <input type="number" value={v.depositEur} onChange={e=>updateVendor(v.id,"depositEur",e.target.value)} style={{...inp(),width:65,color:"#F59E0B"}}/>
                         </div>
                       </td>
-                      <td style={{padding:"7px 9px",color:"#4A6A4A",fontSize:10}}>{fmtUSD(eurToUsd(v.depositEur,eurRate))}</td>
+                      <td style={{padding:"7px 9px",color:"#374151",fontSize:10}}>{fmtUSD(eurToUsd(v.depositEur,eurRate))}</td>
                       <td style={{padding:"7px 9px"}}>
                         <select value={v.status} onChange={e=>updateVendor(v.id,"status",e.target.value)} style={{background:"#f1f1f6",color:STATUS_COLORS[v.status]||"#fff",border:`1px solid ${STATUS_COLORS[v.status]||"#444"}`,borderRadius:99,padding:"2px 8px",fontSize:10,fontFamily:"inherit",cursor:"pointer"}}>
                           {Object.keys(STATUS_COLORS).map(s=><option key={s} value={s} style={{background:"#f1f1f6",color:STATUS_COLORS[s]}}>{s}</option>)}
@@ -1484,12 +1507,12 @@ export default function WeddingPlanner() {
               <div>
                 <div style={{fontSize:9,color:"#6b7280",textTransform:"uppercase",letterSpacing:1}}>Total Vendor Cost</div>
                 <div style={{fontSize:15,fontWeight:700,color:"#0f0f1a"}}>{fmtEUR(vendors.reduce((s,v)=>s+v.costEur,0))}</div>
-                <div style={{fontSize:10,color:"#4A6A4A"}}>{fmtUSD(eurToUsd(vendors.reduce((s,v)=>s+v.costEur,0),eurRate))}</div>
+                <div style={{fontSize:10,color:"#374151"}}>{fmtUSD(eurToUsd(vendors.reduce((s,v)=>s+v.costEur,0),eurRate))}</div>
               </div>
               <div>
                 <div style={{fontSize:9,color:"#F59E0B",textTransform:"uppercase",letterSpacing:1}}>Total Deposits</div>
                 <div style={{fontSize:15,fontWeight:700,color:"#F59E0B"}}>{fmtEUR(vendors.reduce((s,v)=>s+v.depositEur,0))}</div>
-                <div style={{fontSize:10,color:"#4A6A4A"}}>{fmtUSD(eurToUsd(vendors.reduce((s,v)=>s+v.depositEur,0),eurRate))}</div>
+                <div style={{fontSize:10,color:"#374151"}}>{fmtUSD(eurToUsd(vendors.reduce((s,v)=>s+v.depositEur,0),eurRate))}</div>
               </div>
               <div style={{marginLeft:"auto",display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"}}>
                 {Object.entries(STATUS_COLORS).map(([s,c])=>(
@@ -1505,7 +1528,7 @@ export default function WeddingPlanner() {
         {/* ══ KANBAN ══ */}
         {tab==="kanban" && (
           <div>
-            <div style={{fontSize:11,color:"#6b7280",marginBottom:16}}>Drag to move · Click title to edit · {kanban.done.length}/{Object.values(kanban).flat().length} complete</div>
+            <div style={{fontSize:12,color:"#4a4a6a",marginBottom:18,fontWeight:500,display:"flex",alignItems:"center",gap:16}}><span>🖱️ Drag to move tasks</span><span>✏️ Click title to edit</span><span style={{marginLeft:"auto",fontWeight:700,color:"#4F46E5"}}>{kanban.done.length}/{Object.values(kanban).flat().length} complete</span></div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
               {[{key:"todo",label:"📋 To Do",color:"#EF4444"},{key:"inprogress",label:"⚙️ In Progress",color:"#F59E0B"},{key:"done",label:"✅ Done",color:"#10B981"}].map(col=>(
                 <div key={col.key} onDragOver={e=>e.preventDefault()} onDrop={()=>onDrop(col.key)} style={{background:"#ffffff",borderRadius:12,border:`1px solid ${col.color}33`,minHeight:180}}>
@@ -1569,8 +1592,8 @@ export default function WeddingPlanner() {
           <div>
             <div style={{marginBottom:16}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                <span style={{fontSize:11,color:"#111827",letterSpacing:2,textTransform:"uppercase"}}>Overall Progress</span>
-                <span style={{fontSize:12,color:"#0f0f1a"}}>{checkDone}/{checkTotal} done</span>
+                <span style={{fontSize:11,fontWeight:800,color:"#4F46E5",letterSpacing:1,textTransform:"uppercase"}}>Overall Progress</span>
+                <span style={{fontSize:13,fontWeight:700,color:"#0f0f1a"}}>{checkDone}<span style={{color:"#8888aa",fontWeight:400}}>/{checkTotal}</span> done</span>
               </div>
               <div style={{background:"#f1f1f6",borderRadius:99,height:8,overflow:"hidden"}}>
                 <div style={{height:"100%",borderRadius:99,background:"linear-gradient(90deg,#6366f1,#8b5cf6)",width:`${checkTotal>0?(checkDone/checkTotal)*100:0}%`,transition:"width 0.4s"}}/>
