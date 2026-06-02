@@ -1148,6 +1148,12 @@ export default function WeddingPlanner() {
   const inp=(extra={})=>({background:"transparent",border:"none",color:"#0f0f1a",fontSize:13,fontFamily:"'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif",outline:"none",width:"100%",...extra});
   const card=(extra={})=>({background:"#ffffff",border:"1px solid #e5e7eb",borderRadius:12,padding:"16px 18px",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",...extra});
 
+  // ── Window size for responsive layout — must be before any early return ──
+  const [winW, setWinW] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
+  useEffect(()=>{ const h=()=>setWinW(window.innerWidth); window.addEventListener("resize",h); return()=>window.removeEventListener("resize",h); },[]);
+  const isMobile = winW < 640;
+  const isTablet = winW < 900;
+
   // ── Name gate ──
   if(!userName) return(
     <LoginScreen
@@ -1170,46 +1176,52 @@ export default function WeddingPlanner() {
     <div style={{minHeight:"100vh",background:"#f4f4f8",fontFamily:"'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",color:"#111827"}}>
 
       {/* ── STICKY NAV BAR ── */}
-      <div style={{background:"rgba(255,255,255,0.92)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",borderBottom:"1px solid #e4e4ef",padding:"10px 24px 0",position:"sticky",top:0,zIndex:100,boxShadow:"0 1px 20px rgba(79,70,229,0.07)"}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",maxWidth:1240,margin:"0 auto",gap:12}}>
+      <div style={{background:"rgba(255,255,255,0.95)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",borderBottom:"1px solid #e4e4ef",padding:isMobile?"8px 14px 0":"10px 24px 0",position:"sticky",top:0,zIndex:100,boxShadow:"0 1px 20px rgba(79,70,229,0.07)"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",maxWidth:1240,margin:"0 auto",gap:8}}>
+
           {/* Brand */}
-          <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-            <div style={{width:32,height:32,borderRadius:10,background:"linear-gradient(135deg,#4F46E5,#7C3AED)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,boxShadow:"0 4px 12px rgba(79,70,229,0.35)"}}>💍</div>
+          <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+            <div style={{width:30,height:30,borderRadius:9,background:"linear-gradient(135deg,#4F46E5,#7C3AED)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,boxShadow:"0 4px 12px rgba(79,70,229,0.35)",flexShrink:0}}>💍</div>
             <div>
-              <div style={{fontSize:14,fontWeight:800,color:"#0f0f1a",letterSpacing:-0.4,lineHeight:1}}>Ajay & Bianca</div>
-              <div style={{fontSize:10,color:"#8888aa",fontWeight:500}}>Portugal · Spring 2027</div>
+              <div style={{fontSize:isMobile?12:14,fontWeight:800,color:"#0f0f1a",letterSpacing:-0.4,lineHeight:1}}>Ajay & Bianca</div>
+              {!isMobile&&<div style={{fontSize:10,color:"#8888aa",fontWeight:500}}>Portugal · Spring 2027</div>}
             </div>
           </div>
 
-          {/* Event countdowns — center */}
-          <div className="countdown-row" style={{display:"flex",gap:20,flexWrap:"wrap",alignItems:"center"}}>
-            {events.map(e=>(
-              <div key={e.id} style={{textAlign:"center"}}>
-                <div style={{fontSize:9,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.8}}>{e.label.split(" ")[0]}</div>
-                <div style={{fontSize:14,fontWeight:800,color:"#0f0f1a",letterSpacing:-0.5}}>{daysUntil(e.date)}<span style={{fontSize:9,fontWeight:500,color:"#8888aa"}}> d</span></div>
-              </div>
-            ))}
-          </div>
+          {/* Event countdowns — hidden on mobile */}
+          {!isMobile && (
+            <div style={{display:"flex",gap:isTablet?12:20,alignItems:"center",flexWrap:"nowrap"}}>
+              {events.map(e=>(
+                <div key={e.id} style={{textAlign:"center"}}>
+                  <div style={{fontSize:8,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.8}}>{e.label.split(" ")[0]}</div>
+                  <div style={{fontSize:13,fontWeight:800,color:"#0f0f1a",letterSpacing:-0.5}}>{daysUntil(e.date)}<span style={{fontSize:9,fontWeight:500,color:"#8888aa"}}>d</span></div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Right controls */}
-          <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-            <div style={{display:"flex",alignItems:"center",gap:6,background:"rgba(79,70,229,0.06)",border:"1px solid rgba(79,70,229,0.18)",borderRadius:9,padding:"5px 11px"}}>
-              <span style={{fontSize:10,fontWeight:700,color:"#4F46E5",letterSpacing:0.3}}>EUR/USD</span>
+          <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+            {/* EUR/USD */}
+            <div style={{display:"flex",alignItems:"center",gap:5,background:"rgba(79,70,229,0.06)",border:"1px solid rgba(79,70,229,0.18)",borderRadius:8,padding:isMobile?"4px 8px":"5px 11px"}}>
+              <span style={{fontSize:9,fontWeight:700,color:"#4F46E5",letterSpacing:0.3}}>EUR/USD</span>
               <input type="number" step="0.01" value={eurRate} onChange={e=>setEurRate(Number(e.target.value)||1.09)}
-                style={{width:52,background:"transparent",border:"none",fontSize:13,fontWeight:800,color:"#4F46E5",outline:"none",textAlign:"center"}}/>
+                style={{width:isMobile?40:52,background:"transparent",border:"none",fontSize:12,fontWeight:800,color:"#4F46E5",outline:"none",textAlign:"center"}}/>
             </div>
-            <div style={{display:"flex",alignItems:"center",gap:7,background:"#f4f4f8",border:"1px solid #e4e4ef",borderRadius:99,padding:"5px 12px"}}>
-              <div style={{width:8,height:8,borderRadius:"50%",background:AUTHOR_COLORS[userName]||"#9ca3af",boxShadow:`0 0 0 2px ${AUTHOR_COLORS[userName] || "#9ca3af"}44`}}/>
-              <span style={{fontSize:12,fontWeight:700,color:"#0f0f1a"}}>{userName}</span>
-              <button onClick={()=>{setUserName("");localStorage.removeItem("wp_username");}} style={{background:"none",border:"none",color:"#c8c8e0",cursor:"pointer",fontSize:13,padding:0,lineHeight:1,marginLeft:2}}>×</button>
+            {/* User pill */}
+            <div style={{display:"flex",alignItems:"center",gap:6,background:"#f4f4f8",border:"1px solid #e4e4ef",borderRadius:99,padding:"4px 10px"}}>
+              <div style={{width:7,height:7,borderRadius:"50%",background:AUTHOR_COLORS[userName]||"#9ca3af"}}/>
+              <span style={{fontSize:11,fontWeight:700,color:"#0f0f1a"}}>{userName}</span>
+              <button onClick={()=>{setUserName("");localStorage.removeItem("wp_username");}} style={{background:"none",border:"none",color:"#c8c8e0",cursor:"pointer",fontSize:13,padding:0,lineHeight:1}}>×</button>
             </div>
           </div>
         </div>
 
-        {/* Nav tabs */}
-        <div className="nav-tabs-row" style={{display:"flex",gap:0,overflowX:"auto",maxWidth:1240,margin:"6px auto 0"}}>
+        {/* Nav tabs — scrollable */}
+        <div style={{display:"flex",gap:0,overflowX:"auto",maxWidth:1240,margin:"6px auto 0",msOverflowStyle:"none",scrollbarWidth:"none"}}>
           {TABS.map(t=>(
-            <button key={t.id} onClick={()=>setTab(t.id)} className={`nav-tab${tab===t.id?" active":""}`}>
+            <button key={t.id} onClick={()=>setTab(t.id)} className={`nav-tab${tab===t.id?" active":""}`}
+              style={{fontSize:isMobile?11:13,padding:isMobile?"9px 10px":"11px 16px"}}>
               {t.label}
             </button>
           ))}
@@ -1218,8 +1230,7 @@ export default function WeddingPlanner() {
 
       {/* ── CINEMATIC HERO STRIP (overview only) ── */}
       {tab==="overview" && (
-        <div className="hero-strip" style={{ style={{position:"relative",height:300,overflow:"hidden",background:"#0f0f1a"}}}}>
-          {/* Keyframes injected inline */}
+        <div style={{position:"relative",height:isMobile?180:isTablet?240:300,overflow:"hidden",background:"#0f0f1a"}}>
           <style>{`
             @keyframes filmroll {
               0%   { transform: translateX(0); }
@@ -1231,17 +1242,17 @@ export default function WeddingPlanner() {
               height: 100%;
               animation: filmroll 32s linear infinite;
               width: max-content;
-              gap: 4px;
+              gap: 3px;
             }
             .filmroll-inner img {
-              height: 300px;
+              height: 100%;
               width: auto;
-              max-width: 400px;
-              min-width: 180px;
+              max-width: 380px;
+              min-width: 160px;
               object-fit: cover;
               object-position: center top;
               flex-shrink: 0;
-              opacity: 0.88;
+              opacity: 0.85;
             }
           `}</style>
           <div className="filmroll-inner">
@@ -1250,47 +1261,54 @@ export default function WeddingPlanner() {
             ))}
           </div>
 
-          {/* Dark gradient overlays for readability */}
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom, rgba(15,15,26,0.35) 0%, rgba(15,15,26,0.55) 100%)"}}/>
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(to right, rgba(15,15,26,0.5) 0%, transparent 30%, transparent 70%, rgba(15,15,26,0.5) 100%)"}}/>
+          {/* Overlays */}
+          <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(15,15,26,0.3) 0%,rgba(15,15,26,0.65) 100%)"}}/>
+          <div style={{position:"absolute",inset:0,background:"linear-gradient(to right,rgba(15,15,26,0.4) 0%,transparent 25%,transparent 75%,rgba(15,15,26,0.4) 100%)"}}/>
 
-          {/* Overlaid stat cards */}
-          <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 28px"}}>
-            <div style={{width:"100%",maxWidth:1240}} className="hero-strip-content">
-              {/* Title row */}
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:16}}>
-                <div>
-                  <div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.6)",textTransform:"uppercase",letterSpacing:2,marginBottom:4}}>Wedding Dashboard</div>
-                  <div className="hero-title" style={{fontSize:28,fontWeight:800,color:"#ffffff",letterSpacing:-1,lineHeight:1,textShadow:"0 2px 20px rgba(0,0,0,0.4)"}}>Ajay & Bianca 💍</div>
-                </div>
-                <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",fontWeight:500,textAlign:"right"}}>
-                  Portugal · Spring 2027<br/>
-                  <span style={{fontSize:11,opacity:0.7}}>5 events · $500K budget</span>
-                </div>
-              </div>
+          {/* Content overlay */}
+          <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",justifyContent:"center",padding:isMobile?"12px 14px":"20px 28px",gap:isMobile?10:14}}>
+            <div style={{maxWidth:1240,width:"100%",margin:"0 auto"}}>
 
-              {/* Stat pills */}
-              <div className="hero-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:10}}>
+              {/* Title */}
+              {!isMobile && (
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:14}}>
+                  <div>
+                    <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.55)",textTransform:"uppercase",letterSpacing:2,marginBottom:3}}>Wedding Dashboard</div>
+                    <div style={{fontSize:isTablet?22:28,fontWeight:800,color:"#fff",letterSpacing:-1,lineHeight:1,textShadow:"0 2px 20px rgba(0,0,0,0.4)"}}>Ajay & Bianca 💍</div>
+                  </div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,0.6)",fontWeight:500,textAlign:"right"}}>
+                    Portugal · Spring 2027<br/><span style={{opacity:0.7}}>5 events · $500K budget</span>
+                  </div>
+                </div>
+              )}
+              {isMobile && (
+                <div style={{marginBottom:8}}>
+                  <div style={{fontSize:16,fontWeight:800,color:"#fff",letterSpacing:-0.5,textShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>Ajay & Bianca 💍</div>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,0.55)"}}>Portugal · Spring 2027</div>
+                </div>
+              )}
+
+              {/* Stat cards grid — 2 col mobile, 3 col tablet, 6 col desktop */}
+              <div style={{display:"grid",gridTemplateColumns:isMobile?"repeat(2,1fr)":isTablet?"repeat(3,1fr)":"repeat(6,1fr)",gap:isMobile?6:8}}>
                 {[
-                  {label:"Total Budget",   value:"$500,000",          sub:"overall target",          accent:"rgba(255,255,255,0.9)"},
-                  {label:"Total Paid (€)", value:fmtEUR(totalPaidEur),sub:fmtUSD(totalPaidUsd)+" USD",accent:"#FCD34D"},
-                  {label:"Bains Family",  value:fmtEUR(ajayPaidEur), sub:fmtUSD(eurToUsd(ajayPaidEur,eurRate))+" USD",accent:"#60A5FA"},
-                  {label:"Natt Family",value:fmtEUR(biancaPaidEur),sub:fmtUSD(eurToUsd(biancaPaidEur,eurRate))+" USD",accent:"#C084FC"},
-                  {label:"Tasks Left",     value:tasksLeft,            sub:"open kanban items",       accent:"#34D399"},
-                  {label:"Checklist",      value:`${checkDone}/${checkTotal}`,sub:"items complete",  accent:"#FB923C"},
+                  {label:"Budget",       value:"$500K",              sub:"overall target",                        accent:"rgba(255,255,255,0.95)"},
+                  {label:"Paid (€)",     value:fmtEUR(totalPaidEur), sub:fmtUSD(totalPaidUsd)+" USD",             accent:"#FCD34D"},
+                  {label:"Bains",        value:fmtEUR(ajayPaidEur),  sub:fmtUSD(eurToUsd(ajayPaidEur,eurRate)),   accent:"#60A5FA"},
+                  {label:"Natt",         value:fmtEUR(biancaPaidEur),sub:fmtUSD(eurToUsd(biancaPaidEur,eurRate)), accent:"#C084FC"},
+                  {label:"Tasks Left",   value:String(tasksLeft),     sub:"open items",                            accent:"#34D399"},
+                  {label:"Checklist",    value:`${checkDone}/${checkTotal}`,sub:"complete",                       accent:"#FB923C"},
                 ].map(c=>(
                   <div key={c.label} style={{
-                    background:"rgba(15,15,26,0.55)",
-                    backdropFilter:"blur(20px)",
-                    WebkitBackdropFilter:"blur(20px)",
-                    border:"1px solid rgba(255,255,255,0.12)",
-                    borderRadius:16,
-                    padding:"14px 16px",
-                    transition:"transform 0.2s, background 0.2s",
+                    background:"rgba(10,10,20,0.6)",
+                    backdropFilter:"blur(16px)",
+                    WebkitBackdropFilter:"blur(16px)",
+                    border:"1px solid rgba(255,255,255,0.1)",
+                    borderRadius:isMobile?12:14,
+                    padding:isMobile?"10px 12px":"12px 14px",
                   }}>
-                    <div style={{fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:0.8,marginBottom:6}}>{c.label}</div>
-                    <div className="hero-stat-value" className="hero-stat-value" style={{fontSize:20,fontWeight:800,color:c.accent,letterSpacing:-0.5,lineHeight:1}}>{c.value}</div>
-                    <div style={{fontSize:10,color:"rgba(255,255,255,0.45)",marginTop:4,fontWeight:500}}>{c.sub}</div>
+                    <div style={{fontSize:8,fontWeight:700,color:"rgba(255,255,255,0.45)",textTransform:"uppercase",letterSpacing:0.8,marginBottom:4}}>{c.label}</div>
+                    <div style={{fontSize:isMobile?15:18,fontWeight:800,color:c.accent,letterSpacing:-0.5,lineHeight:1}}>{c.value}</div>
+                    <div style={{fontSize:9,color:"rgba(255,255,255,0.4)",marginTop:3,fontWeight:500}}>{c.sub}</div>
                   </div>
                 ))}
               </div>
@@ -1299,7 +1317,7 @@ export default function WeddingPlanner() {
         </div>
       )}
 
-      <div className="main-content" style={{padding:"28px 28px 80px",maxWidth:1240,margin:"0 auto"}}>
+      <div style={{padding:isMobile?"14px 12px 80px":"28px 28px 80px",maxWidth:1240,margin:"0 auto"}}>
 
         {/* ══ OVERVIEW ══ */}
         {tab==="overview" && (
