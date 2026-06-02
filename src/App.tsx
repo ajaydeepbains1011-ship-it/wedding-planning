@@ -819,7 +819,7 @@ const DEFAULT_BUDGET = {
   haldi:     { total:15000,  items:[{name:"Florals & Turmeric Setup",cost:4000},{name:"Photographer",cost:3000},{name:"Catering (light)",cost:4000},{name:"Outfits",cost:2500},{name:"Misc",cost:1500}]},
   welcome:   { total:60000,  items:[{name:"Venue",cost:18000},{name:"Catering & Bar",cost:20000},{name:"DJ / Music",cost:7000},{name:"Décor & Lighting",cost:8000},{name:"Photography",cost:5000},{name:"Misc",cost:2000}]},
   sangeet:   { total:90000,  items:[{name:"Venue",cost:22000},{name:"Stage & AV",cost:12000},{name:"Choreographer",cost:8000},{name:"Catering & Bar",cost:25000},{name:"Décor & Lighting",cost:12000},{name:"Photography/Video",cost:8000},{name:"Dhol & Live Music",cost:5000},{name:"Misc",cost:3000}]},
-  wedding:   { total:220000, items:[{name:"Venue",cost:55000},{name:"Catering",cost:55000},{name:"Mandap & Décor",cost:30000},{name:"Bhai Ji",cost:5000},{name:"Photography/Video",cost:25000},{name:"Bridal HMU",cost:8000},{name:"Bridal Outfit",cost:15000},{name:"Groom Outfit",cost:8000},{name:"Transport & Logistics",cost:6000},{name:"Florals",cost:10000},{name:"Jewelry",cost:12000},{name:"Misc",cost:6000}]},
+  wedding:   { total:220000, items:[{name:"Venue",cost:55000},{name:"Catering",cost:55000},{name:"Anand Karaj & Décor",cost:30000},{name:"Bhai Ji",cost:5000},{name:"Photography/Video",cost:25000},{name:"Bridal HMU",cost:8000},{name:"Bridal Outfit",cost:15000},{name:"Groom Outfit",cost:8000},{name:"Transport & Logistics",cost:6000},{name:"Florals",cost:10000},{name:"Jewelry",cost:12000},{name:"Misc",cost:6000}]},
   reception: { total:115000, items:[{name:"Venue",cost:30000},{name:"Catering & Open Bar",cost:40000},{name:"Band / DJ",cost:15000},{name:"Décor & Lighting",cost:15000},{name:"Photography/Video",cost:10000},{name:"Cake",cost:3000},{name:"Misc",cost:2000}]},
 };
 
@@ -872,7 +872,7 @@ const DEFAULT_KANBAN = {
     { id:"k21", title:"Welcome party DJ",                      event:"welcome",   priority:"med",  due:"2026-11" },
     { id:"k22", title:"Reception band / DJ",                   event:"reception", priority:"med",  due:"2026-11" },
     { id:"k23", title:"Design invitation suite",               event:"all",       priority:"med",  due:"2026-11" },
-    { id:"k24", title:"Mandap design & florals plan",          event:"wedding",   priority:"high", due:"2026-12" },
+    { id:"k24", title:"Anand Karaj design & florals plan",          event:"wedding",   priority:"high", due:"2026-12" },
     { id:"k25", title:"Reception venue booking",               event:"reception", priority:"high", due:"2026-09" },
   ],
   inprogress: [],
@@ -894,7 +894,7 @@ const DEFAULT_CHECKLIST = [
   { category:"Venues", items:[
     {id:"c10", text:"Shortlist & visit wedding venues in Portugal", done:false},
     {id:"c11", text:"Confirm catering exclusivity rules at each venue", done:false},
-    {id:"c12", text:"Confirm space for mandap/pheras setup", done:false},
+    {id:"c12", text:"Confirm space for Anand Karaj/pheras setup", done:false},
     {id:"c13", text:"Book all 5 event venues", done:false},
     {id:"c14", text:"Arrange hotel room block for guests near venues", done:false},
     {id:"c15", text:"Confirm AV/stage capabilities for sangeet venue", done:false},
@@ -932,7 +932,7 @@ const DEFAULT_CHECKLIST = [
   ]},
   { category:"Ceremony Details", items:[
     {id:"c60", text:"Confirm all rituals with Bhai Ji (Anand Karaj or pheras)", done:false},
-    {id:"c61", text:"Mandap design finalized", done:false},
+    {id:"c61", text:"Anand Karaj design finalized", done:false},
     {id:"c62", text:"Doli/baraat plan finalized", done:false},
     {id:"c63", text:"Wedding program/order of service designed", done:false},
     {id:"c64", text:"Milni ceremony logistics planned", done:false},
