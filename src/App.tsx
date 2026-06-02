@@ -982,29 +982,25 @@ function fmtEUR(n) { return `€${Number(n||0).toLocaleString("en-US",{minimumFr
 function uid()     { return "u"+Math.random().toString(36).slice(2,9); }
 function eurToUsd(eur, rate) { return eur * rate; }
 
-async function sharedSave(key,val) {
-  const serialized = JSON.stringify(val);
-  try { localStorage.setItem(key, serialized); } catch(e) {}
+// ── Synchronous localStorage save (immediate, no race conditions) ──
+function localSave(key: string, val: any) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
+  // Also try Claude artifact storage as backup (non-blocking)
   try {
-    const storageApi = (window as any).storage;
-    if (storageApi?.set) await storageApi.set(key, serialized, true);
+    const s = (window as any).storage;
+    if (s?.set) s.set(key, JSON.stringify(val), true).catch(()=>{});
   } catch(e) {}
 }
-async function sharedLoad(key,fallback) {
+function localLoad(key: string, fallback: any) {
   try {
-    const storageApi = (window as any).storage;
-    if (storageApi?.get) {
-      const r = await storageApi.get(key, true);
-      if (r?.value) return JSON.parse(r.value);
-    }
+    const v = localStorage.getItem(key);
+    if (v) return JSON.parse(v);
   } catch(e) {}
-  try {
-    const local = localStorage.getItem(key);
-    return local ? JSON.parse(local) : fallback;
-  } catch(e) {
-    return fallback;
-  }
+  return fallback;
 }
+// Keep sharedSave/sharedLoad as aliases for compatibility
+function sharedSave(key: string, val: any) { localSave(key, val); }
+async function sharedLoad(key: string, fallback: any) { return localLoad(key, fallback); }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // APP
@@ -1049,53 +1045,51 @@ export default function WeddingPlanner() {
   const firstRender = useRef(true);
   const syncTimer   = useRef(null);
 
-  // ── Load ──
+  // ── Load (synchronous - no race conditions) ──
   useEffect(()=>{
-    (async()=>{
-      const storedName=localStorage.getItem("wp_username")||"";
-      setUserName(storedName);
-      const [ev,b,v,py,k,c,g,n,r]=await Promise.all([
-        sharedLoad("wp_events",   DEFAULT_EVENTS),
-        sharedLoad("wp_budget",   DEFAULT_BUDGET),
-        sharedLoad("wp_vendors",  DEFAULT_VENDORS),
-        sharedLoad("wp_payments", DEFAULT_PAYMENTS),
-        sharedLoad("wp_kanban",   DEFAULT_KANBAN),
-        sharedLoad("wp_checklist",DEFAULT_CHECKLIST),
-        sharedLoad("wp_guests",   []),
-        sharedLoad("wp_notes",    []),
-        sharedLoad("wp_eurrate",  DEFAULT_EUR_RATE),
-      ]);
-      setEvents(ev); setBudget(b); setVendors(v); setPayments(py);
-      setKanban(k); setChecklist(c); setGuests(g); setNotes(n); setEurRate(r);
-      setReady(true);
-    })();
+    const storedName = localStorage.getItem("wp_username")||"";
+    setUserName(storedName);
+    setEvents(localLoad("wp_events",   DEFAULT_EVENTS));
+    setBudget(localLoad("wp_budget",   DEFAULT_BUDGET));
+    setVendors(localLoad("wp_vendors", DEFAULT_VENDORS));
+    setPayments(localLoad("wp_payments",DEFAULT_PAYMENTS));
+    setKanban(localLoad("wp_kanban",   DEFAULT_KANBAN));
+    setChecklist(localLoad("wp_checklist",DEFAULT_CHECKLIST));
+    setGuests(localLoad("wp_guests",   []));
+    setNotes(localLoad("wp_notes",     []));
+    setEurRate(localLoad("wp_eurrate", DEFAULT_EUR_RATE));
+    setReady(true);
   },[]);
 
-  // ── Poll every 15s ──
+  // ── Poll every 15s (for multi-user sync via Claude artifact storage) ──
   useEffect(()=>{
-    if(!ready)return;
-    const iv=setInterval(async()=>{
-      const [ev,b,v,py,k,c,g,n,r]=await Promise.all([
-        sharedLoad("wp_events",null),sharedLoad("wp_budget",null),sharedLoad("wp_vendors",null),
-        sharedLoad("wp_payments",null),sharedLoad("wp_kanban",null),sharedLoad("wp_checklist",null),
-        sharedLoad("wp_guests",null),sharedLoad("wp_notes",null),sharedLoad("wp_eurrate",null),
-      ]);
-      if(ev)setEvents(ev); if(b)setBudget(b); if(v)setVendors(v); if(py)setPayments(py);
-      if(k)setKanban(k); if(c)setChecklist(c); if(g)setGuests(g); if(n)setNotes(n); if(r)setEurRate(r);
-    },15000);
+    if(!ready) return;
+    const iv = setInterval(()=>{
+      // Re-read from localStorage in case another tab/user updated
+      const n = localLoad("wp_notes", null);
+      const g = localLoad("wp_guests", null);
+      const k = localLoad("wp_kanban", null);
+      if(n) setNotes(n);
+      if(g) setGuests(g);
+      if(k) setKanban(k);
+    }, 15000);
     return()=>clearInterval(iv);
   },[ready]);
 
-  // ── Auto-save ──
+  // ── Auto-save: immediate sync to localStorage on every change ──
   useEffect(()=>{
-    if(!ready)return;
-    if(firstRender.current){firstRender.current=false;return;}
-    clearTimeout(syncTimer.current);
-    syncTimer.current=setTimeout(()=>{
-      sharedSave("wp_events",events); sharedSave("wp_budget",budget); sharedSave("wp_vendors",vendors);
-      sharedSave("wp_payments",payments); sharedSave("wp_kanban",kanban); sharedSave("wp_checklist",checklist);
-      sharedSave("wp_guests",guests); sharedSave("wp_notes",notes); sharedSave("wp_eurrate",eurRate);
-    },800);
+    if(!ready) return;
+    if(firstRender.current){ firstRender.current=false; return; }
+    // Synchronous - happens instantly, survives any refresh
+    localSave("wp_events",events);
+    localSave("wp_budget",budget);
+    localSave("wp_vendors",vendors);
+    localSave("wp_payments",payments);
+    localSave("wp_kanban",kanban);
+    localSave("wp_checklist",checklist);
+    localSave("wp_guests",guests);
+    localSave("wp_notes",notes);
+    localSave("wp_eurrate",eurRate);
   },[events,budget,vendors,payments,kanban,checklist,guests,notes,eurRate,ready]);
 
   // ── Event dates ──
@@ -1987,11 +1981,16 @@ export default function WeddingPlanner() {
                   <div style={{fontSize:12,fontWeight:700,color:"#0f0f1a",marginBottom:6}}>{userName}</div>
                   <textarea
                     value={newNote}
-                    onChange={e=>setNewNote(e.target.value)}
+                    onChange={e=>{
+                      setNewNote(e.target.value);
+                      // Auto-grow
+                      e.target.style.height="auto";
+                      e.target.style.height=Math.max(72,e.target.scrollHeight)+"px";
+                    }}
                     onKeyDown={e=>{ if((e.metaKey||e.ctrlKey)&&e.key==="Enter") addNote(); }}
                     placeholder="Share an update, decision, or question with the group… (Cmd+Enter to post)"
                     rows={3}
-                    style={{width:"100%",background:"#f9f9fc",border:"1px solid #e4e4ef",borderRadius:12,padding:"12px 14px",fontSize:13,color:"#0f0f1a",fontFamily:"'Plus Jakarta Sans',sans-serif",outline:"none",resize:"vertical",lineHeight:1.6,boxSizing:"border-box",transition:"border-color 0.15s"}}
+                    style={{width:"100%",background:"#f9f9fc",border:"1px solid #e4e4ef",borderRadius:12,padding:"12px 14px",fontSize:13,color:"#0f0f1a",fontFamily:"'Plus Jakarta Sans',sans-serif",outline:"none",resize:"none",lineHeight:1.6,boxSizing:"border-box",transition:"border-color 0.15s",overflow:"hidden",minHeight:72}}
                     onFocus={e=>e.target.style.borderColor="rgba(79,70,229,0.4)"}
                     onBlur={e=>e.target.style.borderColor="#e4e4ef"}
                   />
@@ -2013,7 +2012,7 @@ export default function WeddingPlanner() {
 
             {/* ── Notes feed ── */}
             {notes.length===0 ? (
-              <div style={{textAlign:"center",padding:"60px 20px",color:"#8888aa"}}>
+              <div style={{textAlign:"center",padding:"60px 20px",color:"#8888aa",background:"#ffffff",borderRadius:20,border:"1px dashed #e4e4ef"}}>
                 <div style={{fontSize:32,marginBottom:12}}>✍️</div>
                 <div style={{fontSize:15,fontWeight:600,color:"#4a4a6a",marginBottom:6}}>No notes yet</div>
                 <div style={{fontSize:13}}>Be the first to share an update with the group.</div>
@@ -2055,7 +2054,7 @@ export default function WeddingPlanner() {
                           )}
                         </div>
                         {/* Body */}
-                        <div style={{fontSize:14,color:"#1a1a2e",lineHeight:1.7,whiteSpace:"pre-wrap",fontWeight:400}}>
+                        <div style={{fontSize:14,color:"#1a1a2e",lineHeight:1.7,whiteSpace:"pre-wrap",fontWeight:400,wordBreak:"break-word"}}>
                           {n.text}
                         </div>
                         {/* Footer tag */}
