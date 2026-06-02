@@ -1396,51 +1396,43 @@ export default function WeddingPlanner() {
 
       {/* ── CINEMATIC HERO STRIP (overview only) ── */}
       {tab==="overview" && (
-        <div className="hero-strip" style={{
-  position:"relative",
-  minHeight:isMobile?360:isTablet?300:300,
-  height:isMobile?"auto":isTablet?240:300,
-  overflow:"hidden",
-  background:"#0f0f1a",
-  paddingBottom:isMobile?18:0
-}}>
+        <div style={{position:"relative",height:isMobile?200:isTablet?250:300,overflow:"hidden",background:"#0f0f1a",flexShrink:0}}>
           <style>{`
             @keyframes filmroll {
               0%   { transform: translate3d(0,0,0); }
               100% { transform: translate3d(-50%,0,0); }
             }
-            .filmroll-inner {
+            .filmroll-track {
               display: flex;
+              flex-direction: row;
               align-items: stretch;
-              height: ${isMobile ? "220px" : "100%"};
-              animation: filmroll 28s linear infinite;
-              width: max-content;
-              gap: 4px;
+              position: absolute;
+              top: 0; left: 0; bottom: 0;
+              animation: filmroll 30s linear infinite;
               will-change: transform;
             }
-            .filmroll-inner img {
+            .filmroll-track img {
               height: 100%;
-              width: ${isMobile ? "170px" : "auto"};
-              max-width: ${isMobile ? "none" : "380px"};
-              min-width: ${isMobile ? "170px" : "160px"};
+              width: auto;
+              min-width: 140px;
+              max-width: 340px;
               object-fit: cover;
               object-position: center top;
               flex-shrink: 0;
+              display: block;
               opacity: 0.88;
-            }
-            @media (prefers-reduced-motion: reduce) {
-              .filmroll-inner { animation: none; }
+              margin-right: 4px;
             }
           `}</style>
-          <div className="filmroll-inner">
-            {[...PHOTO_LIST,...PHOTO_LIST].map((src,i)=>(
+          <div className="filmroll-track">
+            {[...PHOTO_LIST,...PHOTO_LIST,...PHOTO_LIST,...PHOTO_LIST].map((src,i)=>(
               <img key={i} src={src} alt=""/>
             ))}
           </div>
 
           {/* Overlays */}
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(15,15,26,0.3) 0%,rgba(15,15,26,0.65) 100%)"}}/>
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(to right,rgba(15,15,26,0.4) 0%,transparent 25%,transparent 75%,rgba(15,15,26,0.4) 100%)"}}/>
+          <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(15,15,26,0.25) 0%,rgba(15,15,26,0.7) 100%)",pointerEvents:"none"}}/>
+          <div style={{position:"absolute",inset:0,background:"linear-gradient(to right,rgba(15,15,26,0.5) 0%,transparent 20%,transparent 80%,rgba(15,15,26,0.5) 100%)",pointerEvents:"none"}}/>
 
           {/* Content overlay */}
           <div style={{
@@ -2116,7 +2108,8 @@ export default function WeddingPlanner() {
 // ─────────────────────────────────────────────────────────────────────────────
 // NOTES TAB COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
-const REACTIONS = ["❤️","🔥","👏","😍","✅","😂","🤔","💍"];
+const QUICK_REACTIONS = ["👍","✅","❤️"];
+const MORE_REACTIONS = ["🔥","👏","😍","😂","🤔","💍","🎉","💯","🙏","😭","🫶","💪"];
 
 function NoteCard({n, userName, deleteNote, toggleReaction, addReply, deleteReply, isMobile}: any){
   const [showReplyBox, setShowReplyBox] = useState(false);
@@ -2197,22 +2190,47 @@ function NoteCard({n, userName, deleteNote, toggleReaction, addReply, deleteRepl
       </div>
 
       {/* ── Action bar ── */}
-      <div style={{padding:isMobile?"8px 14px":"8px 20px",borderTop:"1px solid #f4f4f8",display:"flex",alignItems:"center",gap:4,position:"relative"}}>
+      <div style={{padding:isMobile?"8px 14px":"8px 20px",borderTop:"1px solid #f4f4f8",display:"flex",alignItems:"center",gap:6,position:"relative",flexWrap:"wrap"}}>
 
-        {/* React button */}
+        {/* Quick react buttons: 👍 ✅ ❤️ */}
+        {QUICK_REACTIONS.map(emoji=>{
+          const reacted = (reactions[emoji]||[]).includes(userName);
+          return(
+            <button key={emoji} onClick={()=>toggleReaction(n.id,emoji)}
+              style={{
+                display:"flex",alignItems:"center",gap:4,
+                background:reacted?"rgba(79,70,229,0.08)":"transparent",
+                border:reacted?"1.5px solid rgba(79,70,229,0.3)":"1.5px solid transparent",
+                borderRadius:99,padding:"4px 10px",cursor:"pointer",
+                fontSize:15,fontWeight:reacted?700:400,
+                transition:"all 0.15s",
+              }}
+              onMouseEnter={e=>{ if(!reacted){ e.currentTarget.style.background="#f4f4f8"; e.currentTarget.style.borderColor="#e4e4ef"; }}}
+              onMouseLeave={e=>{ if(!reacted){ e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor="transparent"; }}}
+            >
+              {emoji}
+              {(reactions[emoji]||[]).length>0 && (
+                <span style={{fontSize:11,fontWeight:700,color:reacted?"#4F46E5":"#8888aa"}}>{(reactions[emoji]||[]).length}</span>
+              )}
+            </button>
+          );
+        })}
+
+        {/* More emoji picker */}
         <div style={{position:"relative"}}>
           <button onClick={()=>setShowReactionPicker(p=>!p)}
-            style={{display:"flex",alignItems:"center",gap:5,background:"transparent",border:"none",borderRadius:8,padding:"5px 10px",cursor:"pointer",fontSize:12,fontWeight:500,color:"#8888aa",transition:"all 0.15s"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="#f4f4f8";e.currentTarget.style.color="#4a4a6a";}}
-            onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="#8888aa";}}>
-            <span style={{fontSize:15}}>😊</span> React
+            style={{display:"flex",alignItems:"center",gap:4,background:"transparent",border:"1.5px solid transparent",borderRadius:99,padding:"4px 10px",cursor:"pointer",fontSize:13,fontWeight:500,color:"#8888aa",transition:"all 0.15s"}}
+            onMouseEnter={e=>{e.currentTarget.style.background="#f4f4f8";e.currentTarget.style.borderColor="#e4e4ef";}}
+            onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.borderColor="transparent";}}>
+            <span style={{fontSize:15}}>＋</span>
           </button>
           {showReactionPicker&&(
-            <div style={{position:"absolute",bottom:"calc(100% + 6px)",left:0,background:"#fff",border:"1px solid #e4e4ef",borderRadius:14,padding:"8px 10px",display:"flex",gap:4,boxShadow:"0 8px 28px rgba(0,0,0,0.12)",zIndex:50,flexWrap:"wrap",maxWidth:220}}>
-              {REACTIONS.map(emoji=>(
+            <div style={{position:"absolute",bottom:"calc(100% + 8px)",left:0,background:"#fff",border:"1px solid #e4e4ef",borderRadius:16,padding:"10px 12px",display:"flex",gap:4,flexWrap:"wrap",boxShadow:"0 8px 32px rgba(0,0,0,0.14)",zIndex:50,maxWidth:240}}>
+              <div style={{width:"100%",fontSize:10,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.8,marginBottom:4}}>React with</div>
+              {MORE_REACTIONS.map(emoji=>(
                 <button key={emoji} onClick={()=>{toggleReaction(n.id,emoji);setShowReactionPicker(false);}}
-                  style={{background:"transparent",border:"none",fontSize:20,cursor:"pointer",borderRadius:8,padding:"4px 6px",transition:"transform 0.1s"}}
-                  onMouseEnter={e=>e.currentTarget.style.transform="scale(1.3)"}
+                  style={{background:(reactions[emoji]||[]).includes(userName)?"rgba(79,70,229,0.1)":"transparent",border:"none",fontSize:20,cursor:"pointer",borderRadius:8,padding:"5px 7px",transition:"transform 0.1s,background 0.1s"}}
+                  onMouseEnter={e=>e.currentTarget.style.transform="scale(1.25)"}
                   onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}
                 >{emoji}</button>
               ))}
@@ -2220,19 +2238,22 @@ function NoteCard({n, userName, deleteNote, toggleReaction, addReply, deleteRepl
           )}
         </div>
 
+        {/* Divider */}
+        <div style={{width:1,height:18,background:"#e4e4ef",margin:"0 2px"}}/>
+
         {/* Reply button */}
         <button onClick={()=>{setShowReplyBox(p=>!p);setShowReactionPicker(false);}}
-          style={{display:"flex",alignItems:"center",gap:5,background:"transparent",border:"none",borderRadius:8,padding:"5px 10px",cursor:"pointer",fontSize:12,fontWeight:500,color:showReplyBox?"#4F46E5":"#8888aa",transition:"all 0.15s"}}
-          onMouseEnter={e=>{e.currentTarget.style.background="#f4f4f8";e.currentTarget.style.color="#4a4a6a";}}
-          onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color=showReplyBox?"#4F46E5":"#8888aa";}}>
-          <span style={{fontSize:14}}>↩️</span> Reply
+          style={{display:"flex",alignItems:"center",gap:5,background:showReplyBox?"rgba(79,70,229,0.08)":"transparent",border:showReplyBox?"1.5px solid rgba(79,70,229,0.2)":"1.5px solid transparent",borderRadius:99,padding:"4px 12px",cursor:"pointer",fontSize:12,fontWeight:600,color:showReplyBox?"#4F46E5":"#8888aa",transition:"all 0.15s"}}
+          onMouseEnter={e=>{if(!showReplyBox){e.currentTarget.style.background="#f4f4f8";e.currentTarget.style.borderColor="#e4e4ef";}}}
+          onMouseLeave={e=>{if(!showReplyBox){e.currentTarget.style.background="transparent";e.currentTarget.style.borderColor="transparent";}}}>
+          ↩ Reply {replies.length>0&&<span style={{fontSize:10,background:"#4F46E5",color:"#fff",borderRadius:99,padding:"1px 6px",marginLeft:2}}>{replies.length}</span>}
         </button>
 
-        {/* Replies count toggle */}
+        {/* Replies toggle if there are replies */}
         {replies.length>0&&(
           <button onClick={()=>setShowReplies(p=>!p)}
-            style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:5,background:"transparent",border:"none",borderRadius:8,padding:"5px 10px",cursor:"pointer",fontSize:11,fontWeight:600,color:"#4F46E5",transition:"all 0.15s"}}>
-            {showReplies?"▲":"▼"} {replies.length} {replies.length===1?"reply":"replies"}
+            style={{marginLeft:"auto",background:"transparent",border:"none",cursor:"pointer",fontSize:11,fontWeight:600,color:"#4F46E5",padding:"4px 8px"}}>
+            {showReplies?"Hide":"Show"} {replies.length} {replies.length===1?"reply":"replies"}
           </button>
         )}
       </div>
