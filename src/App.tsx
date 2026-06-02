@@ -14,10 +14,10 @@ const PHOTO_LIST = [PHOTOS.p1, PHOTOS.p2, PHOTOS.p3, PHOTOS.p4, PHOTOS.p5, PHOTO
 
 // ── Global styles & animations ──
 const GLOBAL_CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
   *, *::before, *::after { box-sizing: border-box; }
-  body { margin: 0; font-family: 'Inter', -apple-system, sans-serif; background: #fafafa; }
-  input, select, textarea, button { font-family: 'Inter', -apple-system, sans-serif; }
+  body { margin: 0; font-family: 'DM Sans', -apple-system, sans-serif; background: #f6f6f7; }
+  input, select, textarea, button { font-family: 'DM Sans', -apple-system, sans-serif; }
 
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(20px); }
@@ -191,7 +191,215 @@ const GLOBAL_CSS = `
   .check-row:hover { background: #f9fafb; }
 
   .vendor-row { transition: background 0.15s; }
-  .vendor-row:hover { background: #fafafa !important; }
+  .vendor-row:hover { background: #f0f4ff !important; }
+
+  /* Modern tech palette */
+  :root {
+    --accent: #5B5BD6;
+    --accent-light: #EEF0FF;
+    --accent-mid: #8B8FE8;
+    --surface: #ffffff;
+    --surface-2: #f6f6f7;
+    --surface-3: #efefef;
+    --border: #e8e8ec;
+    --border-strong: #d4d4db;
+    --text-1: #1a1a2e;
+    --text-2: #4e4e6a;
+    --text-3: #8f8fa8;
+    --green: #16a34a;
+    --amber: #d97706;
+    --red: #dc2626;
+  }
+
+  /* Refined stat cards */
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-mid));
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(91,91,214,0.1); border-color: var(--accent-mid); }
+  .stat-card:hover::before { opacity: 1; }
+
+  /* Nav tabs */
+  .nav-tab {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-3);
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: -0.1px;
+  }
+  .nav-tab:hover { color: var(--text-1); }
+  .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
+  /* Buttons */
+  .primary-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+    box-shadow: 0 2px 8px rgba(91,91,214,0.25);
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: -0.1px;
+  }
+  .primary-btn:hover { background: #4a4ab8; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(91,91,214,0.3); }
+  .primary-btn:active { transform: translateY(0); }
+
+  .ghost-btn {
+    background: transparent;
+    color: var(--text-2);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .ghost-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    transition: box-shadow 0.2s;
+  }
+  .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+
+  /* Event rows */
+  .event-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 14px;
+    transition: box-shadow 0.18s, border-color 0.18s, transform 0.18s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  .event-row:hover { box-shadow: 0 4px 16px rgba(91,91,214,0.08); border-color: var(--accent-mid); transform: translateX(4px); }
+
+  /* Kanban */
+  .kanban-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: grab;
+    user-select: none;
+    position: relative;
+    transition: box-shadow 0.18s, transform 0.15s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .kanban-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.09); transform: translateY(-2px); }
+
+  /* Check rows */
+  .check-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 6px;
+    border-radius: 8px;
+    transition: background 0.12s;
+    cursor: pointer;
+  }
+  .check-row:hover { background: var(--accent-light); }
+
+  /* Guest rows */
+  .guest-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 11px 14px;
+    transition: box-shadow 0.18s, border-color 0.18s;
+  }
+  .guest-row:hover { border-color: var(--accent-mid); box-shadow: 0 4px 12px rgba(91,91,214,0.08); }
+
+  /* Note cards */
+  .note-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    transition: box-shadow 0.18s;
+  }
+  .note-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.07); }
+
+  /* Payment rows */
+  .payment-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    transition: box-shadow 0.18s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  .payment-row:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+
+  /* Progress */
+  .progress-track { height: 5px; border-radius: 99px; background: var(--surface-3); overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--accent-mid)); transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+
+  /* Photo chips */
+  .photo-chip {
+    width: 34px; height: 34px; border-radius: 50%;
+    object-fit: cover; border: 2.5px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    margin-left: -9px;
+    transition: transform 0.18s;
+  }
+  .photo-chip:first-child { margin-left: 0; }
+  .photo-chip:hover { transform: scale(1.1); z-index: 10; }
+
+  /* Vendor table */
+  .vendor-table th {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 8px 10px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .vendor-table td { padding: 8px 10px; }
+  .vendor-table tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
+
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
 
   .guest-row {
     background: #ffffff;
@@ -1053,16 +1261,16 @@ export default function WeddingPlanner() {
     <div style={{minHeight:"100vh",background:"#fafafa",display:"flex",alignItems:"center",justifyContent:"center"}}>
       <div style={{textAlign:"center"}}>
         <div style={{fontSize:28,marginBottom:12,animation:"float 2s ease-in-out infinite"}}>💍</div>
-        <div style={{color:"#111827",fontWeight:600,fontSize:15,letterSpacing:-0.3}}>Loading your planner…</div>
+        <div style={{color:"#1a1a2e",fontWeight:600,fontSize:15,letterSpacing:-0.3}}>Loading your planner…</div>
       </div>
     </div>
   );
 
   return(
-    <div style={{minHeight:"100vh",background:"#fafafa",fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",color:"#111827"}}>
+    <div style={{minHeight:"100vh",background:"#f6f6f7",fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",color:"#111827"}}>
 
       {/* HEADER */}
-      <div style={{background:"#ffffff",borderBottom:"1px solid #f0f0f0",padding:"16px 24px 0",position:"sticky",top:0,zIndex:100,boxShadow:"0 1px 0 #f0f0f0"}}>
+      <div style={{background:"#ffffff",borderBottom:"1px solid #e8e8ec",padding:"14px 24px 0",position:"sticky",top:0,zIndex:100,boxShadow:"0 1px 12px rgba(0,0,0,0.05)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12,maxWidth:1200,margin:"0 auto"}}>
           {/* Left: brand + dates */}
           <div style={{display:"flex",alignItems:"center",gap:16}}>
@@ -1223,7 +1431,7 @@ export default function WeddingPlanner() {
             {/* Add payment */}
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
               <h2 style={{margin:0,fontSize:11,letterSpacing:3,color:"#111827",textTransform:"uppercase",fontWeight:400}}>Payment Log</h2>
-              <button onClick={()=>setShowAddPayment(v=>!v)} style={{background:"#111827",color:"#0F1923",border:"none",borderRadius:8,padding:"7px 14px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:700}}>+ Log Payment</button>
+              <button onClick={()=>setShowAddPayment(v=>!v)} className="primary-btn">+ Log Payment</button>
             </div>
 
             {showAddPayment&&(
@@ -1264,7 +1472,7 @@ export default function WeddingPlanner() {
                   </div>
                 )}
                 <div style={{display:"flex",gap:8}}>
-                  <button onClick={addPayment} style={{background:"#111827",color:"#0F1923",border:"none",borderRadius:7,padding:"7px 16px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:700}}>Log Payment</button>
+                  <button onClick={addPayment} style={{background:"#111827",color:"#ffffff",border:"none",borderRadius:7,padding:"7px 16px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:700}}>Log Payment</button>
                   <button onClick={()=>setShowAddPayment(false)} style={{background:"transparent",color:"#6b7280",border:"1px solid #e5e7eb",borderRadius:7,padding:"7px 16px",cursor:"pointer",fontSize:12,fontFamily:"inherit"}}>Cancel</button>
                 </div>
               </div>
@@ -1392,12 +1600,12 @@ export default function WeddingPlanner() {
             </div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
               <h2 style={{margin:0,fontSize:11,letterSpacing:3,color:"#111827",textTransform:"uppercase",fontWeight:400}}>Vendor Tracker</h2>
-              <button onClick={addVendor} style={{background:"#111827",color:"#0F1923",border:"none",borderRadius:8,padding:"7px 14px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:700}}>+ Add Vendor</button>
+              <button onClick={addVendor} className="primary-btn">+ Add Vendor</button>
             </div>
             <div style={{overflowX:"auto"}}>
-              <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+              <table className="vendor-table" style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
                 <thead>
-                  <tr style={{borderBottom:"2px solid #111827"}}>
+                  <tr style={{borderBottom:"2px solid #e8e8ec",background:"#f6f6f7"}}>
                     {["Event","Category","Name","Contact","Cost (€)","→ USD","Deposit (€)","→ USD","Status","Notes",""].map(h=>(
                       <th key={h} style={{padding:"7px 9px",textAlign:"left",color:"#9ca3af",fontWeight:600,fontSize:10,letterSpacing:0.5,whiteSpace:"nowrap",textTransform:"uppercase"}}>{h}</th>
                     ))}
@@ -1405,9 +1613,9 @@ export default function WeddingPlanner() {
                 </thead>
                 <tbody>
                   {vendors.map((v,i)=>(
-                    <tr key={v.id} style={{borderBottom:"1px solid #f3f4f6",background:i%2===0?"#141E2B":"#101820"}}>
+                    <tr key={v.id} style={{borderBottom:"1px solid #f3f4f6",background:i%2===0?"#ffffff":"#f9fafb"}}>
                       <td style={{padding:"7px 9px"}}>
-                        <select value={v.event} onChange={e=>updateVendor(v.id,"event",e.target.value)} style={{background:"transparent",color:"#111827",border:"none",fontSize:10,fontFamily:"inherit",cursor:"pointer"}}>
+                        <select value={v.event} onChange={e=>updateVendor(v.id,"event",e.target.value)} style={{background:"transparent",color:"#1a1a2e",border:"none",fontSize:10,fontFamily:"inherit",cursor:"pointer"}}>
                           {[...events.map(e=>({id:e.id,label:e.label})),{id:"all",label:"All Events"}].map(ev=><option key={ev.id} value={ev.id} style={{background:"#f1f3f8"}}>{ev.label}</option>)}
                         </select>
                       </td>
@@ -1550,8 +1758,8 @@ export default function WeddingPlanner() {
                     {cat.items.map((item,ii)=>{
                       const isEditingThis=editingCheck?.ci===ci&&editingCheck?.ii===ii;
                       return(
-                        <div key={item.id||ii} style={{display:"flex",alignItems:"flex-start",gap:8,padding:"7px 4px",borderBottom:ii<cat.items.length-1?"1px solid #1E2D3D":"none"}}>
-                          <div onClick={()=>toggleCheck(ci,ii)} style={{width:15,height:15,borderRadius:3,flexShrink:0,marginTop:2,border:`2px solid ${item.done?"#B8860B":"#3A4A5A"}`,background:item.done?"#B8860B":"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"all 0.2s"}}>
+                        <div key={item.id||ii} style={{display:"flex",alignItems:"flex-start",gap:8,padding:"7px 4px",borderBottom:ii<cat.items.length-1?"1px solid #f3f4f6":"none"}}>
+                          <div onClick={()=>toggleCheck(ci,ii)} style={{width:15,height:15,borderRadius:3,flexShrink:0,marginTop:2,border:`2px solid ${item.done?"#6366f1":"#d1d5db"}`,background:item.done?"#6366f1":"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"all 0.2s"}}>
                             {item.done&&<span style={{color:"#ffffff",fontSize:9,fontWeight:900}}>✓</span>}
                           </div>
                           {isEditingThis?(
@@ -1646,7 +1854,7 @@ export default function WeddingPlanner() {
                   </div>
                 </div>
                 <div style={{display:"flex",gap:8}}>
-                  <button onClick={addGuest} style={{background:"#111827",color:"#0F1923",border:"none",borderRadius:7,padding:"7px 16px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:700}}>Add Guest</button>
+                  <button onClick={addGuest} style={{background:"#111827",color:"#ffffff",border:"none",borderRadius:7,padding:"7px 16px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:700}}>Add Guest</button>
                   <button onClick={()=>setShowAddGuest(false)} style={{background:"transparent",color:"#6b7280",border:"1px solid #e5e7eb",borderRadius:7,padding:"7px 16px",cursor:"pointer",fontSize:12,fontFamily:"inherit"}}>Cancel</button>
                 </div>
               </div>
@@ -1693,7 +1901,7 @@ export default function WeddingPlanner() {
               <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
                 <textarea value={newNote} onChange={e=>setNewNote(e.target.value)} placeholder={`Write a note as ${userName}…`} rows={3}
                   style={{...inp(),flex:1,background:"#f5f6fa",border:"1px solid #e5e7eb",borderRadius:10,padding:"10px 14px",fontSize:13,resize:"vertical",lineHeight:1.5}}/>
-                <button onClick={addNote} style={{background:"#111827",color:"#0F1923",border:"none",borderRadius:8,padding:"10px 16px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:700,whiteSpace:"nowrap"}}>Post</button>
+                <button onClick={addNote} style={{background:"#111827",color:"#ffffff",border:"none",borderRadius:8,padding:"10px 16px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:700,whiteSpace:"nowrap"}}>Post</button>
               </div>
             </div>
             {notes.length===0?(
