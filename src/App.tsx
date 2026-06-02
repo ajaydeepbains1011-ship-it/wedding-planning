@@ -1163,7 +1163,8 @@ export default function WeddingPlanner() {
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
               {events.map((ev,i)=>(
-                <div key={ev.id} style={{display:"grid",gridTemplateColumns:"auto 1fr auto",alignItems:"center",gap:16,className="event-row fade-up"}}>
+                <div key={ev.id} className="event-row fade-up"
+
                   <div style={{textAlign:"center",minWidth:40}}>
                     <div style={{fontSize:20}}>{ev.emoji}</div>
                     <div style={{fontSize:9,color:ev.color,fontWeight:700}}>Day {i+1}</div>
