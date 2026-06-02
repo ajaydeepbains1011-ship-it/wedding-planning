@@ -1163,7 +1163,8 @@ export default function WeddingPlanner() {
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
               {events.map((ev,i)=>(
-                <div key={ev.id} className="event-row fade-up"></div>
+                                  <div style={{textAlign:"center",minWidth:40}}>
+</div>
 
                   <div style={{textAlign:"center",minWidth:40}}>
                     <div style={{fontSize:20}}>{ev.emoji}</div>
