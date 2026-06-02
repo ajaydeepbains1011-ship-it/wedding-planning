@@ -649,7 +649,7 @@ function LoginScreen({ nameInput, setNameInput, setUserName }: any) {
               <span style={{ fontSize:11, fontWeight:700, color:"#4F46E5", letterSpacing:0.5, textTransform:"uppercase" }}>Spring 2027 · Portugal</span>
             </div>
             <h1 style={{ margin:"0 0 10px", fontSize:38, fontWeight:800, letterSpacing:-1.5, lineHeight:1.05, background:"linear-gradient(135deg,#0f0f1a 0%,#4F46E5 60%,#7C3AED 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
-              Your wedding,<br/>perfectly planned.
+              Our wedding,<br/>perfectly planned.
             </h1>
             <p style={{ color:"#8888aa", fontSize:14, margin:0, lineHeight:1.65, fontWeight:400 }}>
               Budget, vendors, guests, timelines — all in one place for the whole family.
@@ -1099,73 +1099,45 @@ export default function WeddingPlanner() {
   return(
     <div style={{minHeight:"100vh",background:"#f4f4f8",fontFamily:"'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",color:"#111827"}}>
 
-      {/* HEADER */}
-      <div style={{background:"linear-gradient(135deg,#ffffff 0%,#fafafe 100%)",borderBottom:"1px solid #e4e4ef",padding:"14px 24px 0",position:"sticky",top:0,zIndex:100,boxShadow:"0 1px 20px rgba(79,70,229,0.07)"}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12,maxWidth:1200,margin:"0 auto"}}>
-          {/* Left: brand + dates */}
-          <div style={{display:"flex",alignItems:"center",gap:14}}>
-            {/* Infinite scroll photo strip */}
-            <div style={{width:120,height:40,borderRadius:10,overflow:"hidden",position:"relative",flexShrink:0}}>
-              <style>{`
-                @keyframes scroll-photos {
-                  0% { transform: translateX(0); }
-                  100% { transform: translateX(-50%); }
-                }
-                .photo-scroll-inner {
-                  display: flex;
-                  animation: scroll-photos 12s linear infinite;
-                  width: max-content;
-                }
-                .photo-scroll-inner img {
-                  width: 40px;
-                  height: 40px;
-                  object-fit: cover;
-                  object-position: top;
-                  border-radius: 8px;
-                  flex-shrink: 0;
-                  margin-right: 4px;
-                  border: 1.5px solid #fff;
-                }
-              `}</style>
-              <div className="photo-scroll-inner">
-                {[...PHOTO_LIST,...PHOTO_LIST].map((src,i)=>(
-                  <img key={i} src={src} alt=""/>
-                ))}
-              </div>
-            </div>
+      {/* ── STICKY NAV BAR ── */}
+      <div style={{background:"rgba(255,255,255,0.92)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",borderBottom:"1px solid #e4e4ef",padding:"10px 24px 0",position:"sticky",top:0,zIndex:100,boxShadow:"0 1px 20px rgba(79,70,229,0.07)"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",maxWidth:1240,margin:"0 auto",gap:12}}>
+          {/* Brand */}
+          <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+            <div style={{width:32,height:32,borderRadius:10,background:"linear-gradient(135deg,#4F46E5,#7C3AED)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,boxShadow:"0 4px 12px rgba(79,70,229,0.35)"}}>💍</div>
             <div>
-              <div style={{fontSize:15,fontWeight:800,color:"#0f0f1a",letterSpacing:-0.5,lineHeight:1}}>Ajay & Bianca</div>
-              <div style={{fontSize:11,color:"#8888aa",marginTop:3,letterSpacing:-0.1,fontWeight:500}}>Portugal · Spring 2027 · $500K</div>
+              <div style={{fontSize:14,fontWeight:800,color:"#0f0f1a",letterSpacing:-0.4,lineHeight:1}}>Ajay & Bianca</div>
+              <div style={{fontSize:10,color:"#8888aa",fontWeight:500}}>Portugal · Spring 2027</div>
             </div>
           </div>
 
-          {/* Center: event countdowns */}
-          <div style={{display:"flex",gap:16,flexWrap:"wrap",alignItems:"center"}}>
+          {/* Event countdowns — center */}
+          <div style={{display:"flex",gap:20,flexWrap:"wrap",alignItems:"center"}}>
             {events.map(e=>(
               <div key={e.id} style={{textAlign:"center"}}>
-                <div style={{fontSize:10,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.8}}>{e.label.split(" ")[0]}</div>
-                <div style={{fontSize:15,fontWeight:700,color:"#111827",letterSpacing:-0.5}}>{daysUntil(e.date)}<span style={{fontSize:10,fontWeight:400,color:"#9ca3af"}}>d</span></div>
+                <div style={{fontSize:9,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.8}}>{e.label.split(" ")[0]}</div>
+                <div style={{fontSize:14,fontWeight:800,color:"#0f0f1a",letterSpacing:-0.5}}>{daysUntil(e.date)}<span style={{fontSize:9,fontWeight:500,color:"#8888aa"}}> d</span></div>
               </div>
             ))}
           </div>
 
-          {/* Right: user + rate */}
-          <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,background:"rgba(79,70,229,0.06)",border:"1px solid rgba(79,70,229,0.15)",borderRadius:10,padding:"6px 12px"}}>
-              <span style={{fontSize:11,fontWeight:600,color:"#4F46E5"}}>EUR/USD</span>
+          {/* Right controls */}
+          <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,background:"rgba(79,70,229,0.06)",border:"1px solid rgba(79,70,229,0.18)",borderRadius:9,padding:"5px 11px"}}>
+              <span style={{fontSize:10,fontWeight:700,color:"#4F46E5",letterSpacing:0.3}}>EUR/USD</span>
               <input type="number" step="0.01" value={eurRate} onChange={e=>setEurRate(Number(e.target.value)||1.09)}
-                style={{width:56,background:"transparent",border:"none",fontSize:13,fontWeight:700,color:"#4F46E5",outline:"none",textAlign:"center"}}/>
+                style={{width:52,background:"transparent",border:"none",fontSize:13,fontWeight:800,color:"#4F46E5",outline:"none",textAlign:"center"}}/>
             </div>
-            <div style={{display:"flex",alignItems:"center",gap:8,background:"#f9fafb",border:"1px solid #f0f0f0",borderRadius:99,padding:"6px 12px"}}>
-              <div style={{width:8,height:8,borderRadius:"50%",background:AUTHOR_COLORS[userName]||"#9ca3af"}}/>
-              <span style={{fontSize:12,fontWeight:600,color:"#111827"}}>{userName}</span>
-              <button onClick={()=>{setUserName("");localStorage.removeItem("wp_username");}} style={{background:"none",border:"none",color:"#d1d5db",cursor:"pointer",fontSize:11,padding:0,lineHeight:1}}>×</button>
+            <div style={{display:"flex",alignItems:"center",gap:7,background:"#f4f4f8",border:"1px solid #e4e4ef",borderRadius:99,padding:"5px 12px"}}>
+              <div style={{width:8,height:8,borderRadius:"50%",background:AUTHOR_COLORS[userName]||"#9ca3af",boxShadow:`0 0 0 2px ${AUTHOR_COLORS[userName] || "#9ca3af"}44`}}/>
+              <span style={{fontSize:12,fontWeight:700,color:"#0f0f1a"}}>{userName}</span>
+              <button onClick={()=>{setUserName("");localStorage.removeItem("wp_username");}} style={{background:"none",border:"none",color:"#c8c8e0",cursor:"pointer",fontSize:13,padding:0,lineHeight:1,marginLeft:2}}>×</button>
             </div>
           </div>
         </div>
 
         {/* Nav tabs */}
-        <div style={{display:"flex",gap:0,marginTop:8,overflowX:"auto",maxWidth:1200,margin:"8px auto 0"}}>
+        <div style={{display:"flex",gap:0,overflowX:"auto",maxWidth:1240,margin:"6px auto 0"}}>
           {TABS.map(t=>(
             <button key={t.id} onClick={()=>setTab(t.id)} className={`nav-tab${tab===t.id?" active":""}`}>
               {t.label}
@@ -1174,28 +1146,90 @@ export default function WeddingPlanner() {
         </div>
       </div>
 
+      {/* ── CINEMATIC HERO STRIP (overview only) ── */}
+      {tab==="overview" && (
+        <div style={{position:"relative",height:260,overflow:"hidden",background:"#0f0f1a"}}>
+          {/* Keyframes injected inline */}
+          <style>{`
+            @keyframes filmroll {
+              0%   { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+            .filmroll-inner {
+              display: flex;
+              height: 100%;
+              animation: filmroll 28s linear infinite;
+              width: max-content;
+            }
+            .filmroll-inner img {
+              height: 260px;
+              width: 320px;
+              object-fit: cover;
+              object-position: center top;
+              flex-shrink: 0;
+              opacity: 0.85;
+            }
+          `}</style>
+          <div className="filmroll-inner">
+            {[...PHOTO_LIST,...PHOTO_LIST,...PHOTO_LIST,...PHOTO_LIST].map((src,i)=>(
+              <img key={i} src={src} alt=""/>
+            ))}
+          </div>
+
+          {/* Dark gradient overlays for readability */}
+          <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom, rgba(15,15,26,0.35) 0%, rgba(15,15,26,0.55) 100%)"}}/>
+          <div style={{position:"absolute",inset:0,background:"linear-gradient(to right, rgba(15,15,26,0.5) 0%, transparent 30%, transparent 70%, rgba(15,15,26,0.5) 100%)"}}/>
+
+          {/* Overlaid stat cards */}
+          <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 28px"}}>
+            <div style={{width:"100%",maxWidth:1240}}>
+              {/* Title row */}
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:16}}>
+                <div>
+                  <div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.6)",textTransform:"uppercase",letterSpacing:2,marginBottom:4}}>Wedding Dashboard</div>
+                  <div style={{fontSize:28,fontWeight:800,color:"#ffffff",letterSpacing:-1,lineHeight:1,textShadow:"0 2px 20px rgba(0,0,0,0.4)"}}>Ajay & Bianca 💍</div>
+                </div>
+                <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",fontWeight:500,textAlign:"right"}}>
+                  Portugal · Spring 2027<br/>
+                  <span style={{fontSize:11,opacity:0.7}}>5 events · $500K budget</span>
+                </div>
+              </div>
+
+              {/* Stat pills */}
+              <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:10}}>
+                {[
+                  {label:"Total Budget",   value:"$500,000",          sub:"overall target",          accent:"rgba(255,255,255,0.9)"},
+                  {label:"Total Paid (€)", value:fmtEUR(totalPaidEur),sub:fmtUSD(totalPaidUsd)+" USD",accent:"#FCD34D"},
+                  {label:"Ajay's Family",  value:fmtEUR(ajayPaidEur), sub:fmtUSD(eurToUsd(ajayPaidEur,eurRate))+" USD",accent:"#60A5FA"},
+                  {label:"Bianca's Family",value:fmtEUR(biancaPaidEur),sub:fmtUSD(eurToUsd(biancaPaidEur,eurRate))+" USD",accent:"#C084FC"},
+                  {label:"Tasks Left",     value:tasksLeft,            sub:"open kanban items",       accent:"#34D399"},
+                  {label:"Checklist",      value:`${checkDone}/${checkTotal}`,sub:"items complete",  accent:"#FB923C"},
+                ].map(c=>(
+                  <div key={c.label} style={{
+                    background:"rgba(15,15,26,0.55)",
+                    backdropFilter:"blur(20px)",
+                    WebkitBackdropFilter:"blur(20px)",
+                    border:"1px solid rgba(255,255,255,0.12)",
+                    borderRadius:16,
+                    padding:"14px 16px",
+                    transition:"transform 0.2s, background 0.2s",
+                  }}>
+                    <div style={{fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:0.8,marginBottom:6}}>{c.label}</div>
+                    <div style={{fontSize:20,fontWeight:800,color:c.accent,letterSpacing:-0.5,lineHeight:1}}>{c.value}</div>
+                    <div style={{fontSize:10,color:"rgba(255,255,255,0.45)",marginTop:4,fontWeight:500}}>{c.sub}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={{padding:"28px 28px 80px",maxWidth:1240,margin:"0 auto"}}>
 
         {/* ══ OVERVIEW ══ */}
         {tab==="overview" && (
           <div>
-            {/* Stat cards */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:20}}>
-              {[
-                {label:"Total Budget",    value:"$500,000",                           sub:"overall target"},
-                {label:"Total Paid (€)",  value:fmtEUR(totalPaidEur),                col:"#B45309",sub:fmtUSD(totalPaidUsd)+" USD"},
-                {label:"Ajay's Family",   value:fmtEUR(ajayPaidEur),                 col:"#1D4ED8",sub:fmtUSD(eurToUsd(ajayPaidEur,eurRate))+" USD"},
-                {label:"Bianca's Family", value:fmtEUR(biancaPaidEur),               col:"#7C3AED",sub:fmtUSD(eurToUsd(biancaPaidEur,eurRate))+" USD"},
-                {label:"Tasks Left",      value:tasksLeft,                             sub:"kanban items"},
-                {label:"Checklist",       value:`${checkDone}/${checkTotal}`,          sub:"items done"},
-              ].map(c=>(
-                <div key={c.label} className="stat-card fade-up">
-                  <div style={{fontSize:10,fontWeight:700,color:"#6666aa",textTransform:"uppercase",letterSpacing:0.8}}>{c.label}</div>
-                  <div style={{fontSize:22,fontWeight:700,color:c.col||"#0f0f1a",margin:"5px 0 2px"}}>{c.value}</div>
-                  <div style={{fontSize:10,color:"#4a4a6a",fontWeight:500}}>{c.sub}</div>
-                </div>
-              ))}
-            </div>
 
             {/* Budget bar */}
             <div className="card" style={{marginBottom:18,padding:"20px 22px"}}>
