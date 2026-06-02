@@ -2082,100 +2082,226 @@ function WeddingPlannerApp() {
         {/* ══ KANBAN ══ */}
         {tab==="kanban" && (
           <div>
-            <div style={{fontSize:12,color:"#4a4a6a",marginBottom:18,fontWeight:500,display:"flex",alignItems:"center",gap:16}}><span>🖱️ Drag to move tasks</span><span>✏️ Click title to edit</span><span style={{marginLeft:"auto",fontWeight:700,color:"#4F46E5"}}>{kanban.done.length}/{Object.values(kanban).flat().length} complete</span></div>
-            <div className="kanban-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
-              {[{key:"todo",label:"📋 To Do",color:"#EF4444"},{key:"inprogress",label:"⚙️ In Progress",color:"#F59E0B"},{key:"done",label:"✅ Done",color:"#10B981"}].map(col=>(
-                <div key={col.key} onDragOver={e=>e.preventDefault()} onDrop={()=>onDrop(col.key)} style={{background:"#ffffff",borderRadius:12,border:`1px solid ${col.color}33`,minHeight:180}}>
-                  <div style={{padding:"10px 12px",borderBottom:`2px solid ${col.color}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <span style={{fontSize:11,fontWeight:700,color:col.color}}>{col.label}</span>
-                    <div style={{display:"flex",alignItems:"center",gap:6}}>
-                      <span style={{background:`${col.color}22`,color:col.color,fontSize:9,fontWeight:700,borderRadius:99,padding:"2px 7px"}}>{kanban[col.key].length}</span>
-                      <button onClick={()=>setShowNewCard(showNewCard===col.key?null:col.key)} style={{background:`${col.color}22`,border:"none",color:col.color,borderRadius:6,width:20,height:20,cursor:"pointer",fontSize:14,lineHeight:"20px",padding:0}}>+</button>
+            {/* Header */}
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20,flexWrap:"wrap",gap:8}}>
+              <div>
+                <div style={{fontSize:11,fontWeight:800,color:"#4F46E5",textTransform:"uppercase",letterSpacing:1,marginBottom:3}}>Task Board</div>
+                <div style={{fontSize:12,color:"#8888aa"}}>
+                  {Object.values(kanban).flat().filter((c:any)=>c.assignee).length} assigned · {kanban.done.length} done · {Object.values(kanban).flat().length} total
+                </div>
+              </div>
+              <button onClick={()=>setShowNewCard("global")} className="primary-btn">+ Add Task</button>
+            </div>
+
+            {/* Global add task modal */}
+            {showNewCard==="global"&&(
+              <div style={{position:"fixed",inset:0,background:"rgba(10,10,20,0.5)",backdropFilter:"blur(8px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={()=>setShowNewCard(null)}>
+                <div style={{background:"#fff",borderRadius:24,padding:"28px",width:"100%",maxWidth:440,boxShadow:"0 24px 80px rgba(79,70,229,0.18)"}} onClick={e=>e.stopPropagation()}>
+                  <div style={{fontSize:18,fontWeight:800,color:"#0f0f1a",marginBottom:18,letterSpacing:-0.5}}>New Task</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:12}}>
+                    <div>
+                      <div style={{fontSize:11,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.6,marginBottom:5}}>Title *</div>
+                      <input autoFocus value={newCard.title} onChange={e=>setNewCard(n=>({...n,title:e.target.value}))}
+                        onKeyDown={e=>{if(e.key==="Enter"&&newCard.title.trim()) addCard("todo"); if(e.key==="Escape") setShowNewCard(null);}}
+                        placeholder="What needs to get done?"
+                        style={{width:"100%",boxSizing:"border-box",background:"#f9f9fc",border:"1.5px solid #e4e4ef",borderRadius:12,padding:"10px 14px",fontSize:13,color:"#0f0f1a",fontFamily:"inherit",outline:"none"}}
+                        onFocus={e=>e.target.style.borderColor="rgba(79,70,229,0.4)"}
+                        onBlur={e=>e.target.style.borderColor="#e4e4ef"}/>
                     </div>
-                  </div>
-                  {showNewCard===col.key&&(
-                    <div style={{margin:"8px 8px 0",background:"#f9f9fc",border:"1px solid #e5e7eb",borderRadius:8,padding:"9px 11px"}}>
-                      <input placeholder="Task title…" value={newCard.title} onChange={e=>setNewCard(n=>({...n,title:e.target.value}))}
-                        style={{...inp(),marginBottom:7,borderBottom:"1px solid #2A3A4A",paddingBottom:3,fontSize:12}}
-                        onKeyDown={e=>{if(e.key==="Enter")addCard(col.key);if(e.key==="Escape")setShowNewCard(null);}} autoFocus/>
-                      <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:7}}>
-                        <select value={newCard.event} onChange={e=>setNewCard(n=>({...n,event:e.target.value}))} style={{background:"#f9f9fc",border:"1px solid #e5e7eb",color:"#111827",fontSize:10,borderRadius:5,padding:"2px 5px",fontFamily:"inherit"}}>
-                          {[...events.map(e=>({id:e.id,label:e.label})),{id:"all",label:"All Events"}].map(ev=><option key={ev.id} value={ev.id} style={{background:"#f9f9fc"}}>{ev.label}</option>)}
-                        </select>
-                        <select value={newCard.priority} onChange={e=>setNewCard(n=>({...n,priority:e.target.value}))} style={{background:"#f9f9fc",border:"1px solid #e5e7eb",color:PRIORITY_COLORS[newCard.priority],fontSize:10,borderRadius:5,padding:"2px 5px",fontFamily:"inherit"}}>
-                          {["high","med","low"].map(p=><option key={p} value={p} style={{background:"#f9f9fc",color:PRIORITY_COLORS[p]}}>{p}</option>)}
-                        </select>
-                        <input placeholder="Due e.g. 2026-10" value={newCard.due} onChange={e=>setNewCard(n=>({...n,due:e.target.value}))} style={{...inp(),width:100,border:"1px solid #e5e7eb",borderRadius:5,padding:"2px 5px",fontSize:10}}/>
-                        <select value={newCard.assignee} onChange={e=>setNewCard(n=>({...n,assignee:e.target.value}))} style={{background:"#f9f9fc",border:"1px solid #e5e7eb",color:"#111827",fontSize:10,borderRadius:5,padding:"2px 5px",fontFamily:"inherit"}}>
-                          <option value="">Assignee</option>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                      <div>
+                        <div style={{fontSize:11,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.6,marginBottom:5}}>Assignee</div>
+                        <select value={newCard.assignee} onChange={e=>setNewCard(n=>({...n,assignee:e.target.value}))}
+                          style={{width:"100%",boxSizing:"border-box",background:"#f9f9fc",border:"1.5px solid #e4e4ef",borderRadius:12,padding:"10px 14px",fontSize:13,color:"#0f0f1a",fontFamily:"inherit",outline:"none",cursor:"pointer"}}>
+                          <option value="">Unassigned</option>
                           {["Ajay","Bianca","Kamal","Anit"].map(n=><option key={n} value={n}>{n}</option>)}
+                          <option value="other">Other (specify below)</option>
                         </select>
                       </div>
-                      <div style={{display:"flex",gap:5}}>
-                        <button onClick={()=>addCard(col.key)} style={{background:col.color,color:"#fff",border:"none",borderRadius:5,padding:"4px 10px",cursor:"pointer",fontSize:10,fontFamily:"inherit",fontWeight:700}}>Add</button>
-                        <button onClick={()=>setShowNewCard(null)} style={{background:"transparent",color:"#6b7280",border:"1px solid #e5e7eb",borderRadius:5,padding:"4px 10px",cursor:"pointer",fontSize:10,fontFamily:"inherit"}}>Cancel</button>
+                      <div>
+                        <div style={{fontSize:11,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.6,marginBottom:5}}>Priority</div>
+                        <select value={newCard.priority} onChange={e=>setNewCard(n=>({...n,priority:e.target.value}))}
+                          style={{width:"100%",boxSizing:"border-box",background:"#f9f9fc",border:"1.5px solid #e4e4ef",borderRadius:12,padding:"10px 14px",fontSize:13,color:PRIORITY_COLORS[newCard.priority],fontFamily:"inherit",outline:"none",cursor:"pointer",fontWeight:700}}>
+                          {["high","med","low"].map(p=><option key={p} value={p} style={{color:PRIORITY_COLORS[p]}}>{p==="high"?"🔴 High":p==="med"?"🟡 Medium":"🟢 Low"}</option>)}
+                        </select>
                       </div>
                     </div>
-                  )}
-                  <div style={{padding:"6px",display:"flex",flexDirection:"column",gap:5}}>
-                    {kanban[col.key].map(card=>{
-                      const ev=events.find(e=>e.id===card.event)||{color:"#8888aa",emoji:"📌",label:"All"};
-                      const isEditing=editingCard?.col===col.key&&editingCard?.id===card.id;
-                      const priColor=PRIORITY_COLORS[card.priority];
-                      const assigneeColor=AUTHOR_COLORS[card.assignee]||null;
-                      return(
-                        <div key={card.id} draggable={!isEditing} onDragStart={()=>!isEditing&&onDragStart(card,col.key)}
-                          className="kanban-card"
-                          style={{borderTop:`3px solid ${priColor}`,cursor:isEditing?"default":"grab",position:"relative"}}>
-                          {/* Priority + delete row */}
-                          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
-                            <span style={{fontSize:9,fontWeight:700,color:priColor,background:`${priColor}18`,borderRadius:99,padding:"2px 8px",textTransform:"uppercase",letterSpacing:0.5}}>
-                              {card.priority==="high"?"🔴 High":card.priority==="med"?"🟡 Med":"🟢 Low"}
-                            </span>
-                            <button onClick={()=>deleteCard(col.key,card.id)} style={{background:"transparent",border:"none",color:"#d1d5db",cursor:"pointer",fontSize:15,padding:"0 2px",lineHeight:1}}
-                              onMouseEnter={e=>e.currentTarget.style.color="#ef4444"}
-                              onMouseLeave={e=>e.currentTarget.style.color="#d1d5db"}>×</button>
-                          </div>
-                          {/* Title */}
-                          {isEditing?(
-                            <input autoFocus value={card.title}
-                              onChange={e=>updateCardTitle(col.key,card.id,e.target.value)}
-                              onBlur={()=>setEditingCard(null)}
-                              onKeyDown={e=>{if(e.key==="Enter"||e.key==="Escape")setEditingCard(null);}}
-                              style={{...inp(),fontSize:13,fontWeight:600,borderBottom:"2px solid #4F46E5",paddingBottom:2,marginBottom:8}}/>
-                          ):(
-                            <div style={{fontSize:13,fontWeight:600,color:"#0f0f1a",lineHeight:1.45,marginBottom:8,cursor:"text",wordBreak:"break-word"}}
-                              onClick={()=>setEditingCard({col:col.key,id:card.id})}>{card.title}</div>
-                          )}
-                          {/* Footer row */}
-                          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:6}}>
-                            <div style={{display:"flex",alignItems:"center",gap:5,flexWrap:"wrap"}}>
-                              {/* Event badge */}
-                              <span style={{fontSize:9,fontWeight:600,color:ev.color,background:`${ev.color}18`,borderRadius:99,padding:"2px 7px",whiteSpace:"nowrap"}}>
-                                {ev.emoji} {ev.label.split(" ")[0]}
-                              </span>
-                              {/* Due date */}
-                              {card.due&&<span style={{fontSize:9,color:"#8888aa",fontWeight:500}}>📅 {card.due}</span>}
-                            </div>
-                            {/* Assignee */}
-                            <select value={card.assignee||""} onChange={e=>updateCardAssignee(col.key,card.id,e.target.value)}
-                              style={{background:assigneeColor?`${assigneeColor}18`:"#f4f4f8",border:`1px solid ${assigneeColor||"#e4e4ef"}`,borderRadius:99,padding:"2px 7px",fontSize:9,fontWeight:700,color:assigneeColor||"#8888aa",cursor:"pointer",fontFamily:"inherit",outline:"none",maxWidth:80}}>
-                              <option value="">Assign</option>
-                              {["Ajay","Bianca","Kamal","Anit"].map(n=><option key={n} value={n}>{n}</option>)}
-                            </select>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {kanban[col.key].length===0&&showNewCard!==col.key&&(
-                      <div style={{padding:"24px 16px",textAlign:"center",color:"#c8c8e0",fontSize:12,border:"1.5px dashed #e4e4ef",borderRadius:12}}>
-                        Drop cards here
+                    {newCard.assignee==="other"&&(
+                      <div>
+                        <div style={{fontSize:11,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.6,marginBottom:5}}>Assignee Name</div>
+                        <input value={newCard.customAssignee||""} onChange={e=>setNewCard(n=>({...n,customAssignee:e.target.value}))}
+                          placeholder="e.g. Wedding Planner, Venue Contact…"
+                          style={{width:"100%",boxSizing:"border-box",background:"#f9f9fc",border:"1.5px solid #e4e4ef",borderRadius:12,padding:"10px 14px",fontSize:13,color:"#0f0f1a",fontFamily:"inherit",outline:"none"}}
+                          onFocus={e=>e.target.style.borderColor="rgba(79,70,229,0.4)"}
+                          onBlur={e=>e.target.style.borderColor="#e4e4ef"}/>
                       </div>
                     )}
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                      <div>
+                        <div style={{fontSize:11,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.6,marginBottom:5}}>Event</div>
+                        <select value={newCard.event} onChange={e=>setNewCard(n=>({...n,event:e.target.value}))}
+                          style={{width:"100%",boxSizing:"border-box",background:"#f9f9fc",border:"1.5px solid #e4e4ef",borderRadius:12,padding:"10px 14px",fontSize:13,color:"#0f0f1a",fontFamily:"inherit",outline:"none",cursor:"pointer"}}>
+                          {[...events.map(e=>({id:e.id,label:e.label})),{id:"all",label:"All Events"}].map(ev=><option key={ev.id} value={ev.id}>{ev.label}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <div style={{fontSize:11,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.6,marginBottom:5}}>Due Date</div>
+                        <input value={newCard.due} onChange={e=>setNewCard(n=>({...n,due:e.target.value}))}
+                          placeholder="e.g. 2026-10"
+                          style={{width:"100%",boxSizing:"border-box",background:"#f9f9fc",border:"1.5px solid #e4e4ef",borderRadius:12,padding:"10px 14px",fontSize:13,color:"#0f0f1a",fontFamily:"inherit",outline:"none"}}
+                          onFocus={e=>e.target.style.borderColor="rgba(79,70,229,0.4)"}
+                          onBlur={e=>e.target.style.borderColor="#e4e4ef"}/>
+                      </div>
+                    </div>
+                    <div style={{display:"flex",gap:10,marginTop:4}}>
+                      <button onClick={()=>setShowNewCard(null)}
+                        style={{flex:1,background:"#f4f4f8",border:"none",borderRadius:12,padding:"12px",cursor:"pointer",fontSize:13,fontWeight:600,color:"#8888aa",fontFamily:"inherit"}}>
+                        Cancel
+                      </button>
+                      <button onClick={()=>{
+                        const assigneeFinal = newCard.assignee==="other" ? (newCard.customAssignee||"Other") : newCard.assignee;
+                        if(!newCard.title.trim()) return;
+                        const card={id:uid(),...newCard,assignee:assigneeFinal,due:newCard.due||"TBD"};
+                        setKanban((p:any)=>({...p,todo:[...p.todo,card]}));
+                        setNewCard({title:"",event:"wedding",priority:"med",due:"",assignee:"",customAssignee:""} as any);
+                        setShowNewCard(null);
+                      }}
+                        style={{flex:2,background:"linear-gradient(135deg,#4F46E5,#7C3AED)",border:"none",borderRadius:12,padding:"12px",cursor:"pointer",fontSize:13,fontWeight:700,color:"#fff",fontFamily:"inherit",boxShadow:"0 4px 14px rgba(79,70,229,0.3)",opacity:newCard.title.trim()?"1":"0.5"}}>
+                        Add Task →
+                      </button>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+
+            {/* ── Person swimlanes ── */}
+            {(()=>{
+              const allCards = Object.entries(kanban).flatMap(([status,cards]:any)=>cards.map((c:any)=>({...c,status})));
+              const PEOPLE = [
+                {name:"Ajay",   color:AUTHOR_COLORS["Ajay"],   label:"Ajay"},
+                {name:"Bianca", color:AUTHOR_COLORS["Bianca"], label:"Bianca"},
+                {name:"Kamal",  color:AUTHOR_COLORS["Kamal"],  label:"Kamal"},
+                {name:"Anit",   color:AUTHOR_COLORS["Anit"],   label:"Anit"},
+                {name:"other",  color:"#6b7280",               label:"Others / Vendors"},
+              ];
+              const STATUS_COLS = [
+                {key:"todo",      label:"To Do",      color:"#EF4444"},
+                {key:"inprogress",label:"In Progress", color:"#F59E0B"},
+                {key:"done",      label:"Done",        color:"#10B981"},
+              ];
+
+              return PEOPLE.map(person=>{
+                const personCards = allCards.filter((c:any)=>{
+                  if(person.name==="other") return c.assignee && !["Ajay","Bianca","Kamal","Anit",""].includes(c.assignee);
+                  if(person.name==="Ajay") return !c.assignee||c.assignee===""||c.assignee==="Ajay";
+                  return c.assignee===person.name;
+                });
+                const totalTasks = personCards.length;
+                const doneTasks = personCards.filter((c:any)=>c.status==="done").length;
+
+                return(
+                  <div key={person.name} style={{marginBottom:24,background:"#ffffff",border:"1px solid #e4e4ef",borderRadius:20,overflow:"hidden",boxShadow:"0 2px 12px rgba(79,70,229,0.05)"}}>
+                    {/* Section header */}
+                    <div style={{padding:"14px 20px",borderBottom:"1px solid #f0f0f8",display:"flex",alignItems:"center",gap:12,background:`linear-gradient(135deg,${person.color}08,transparent)`}}>
+                      <div style={{width:36,height:36,borderRadius:11,background:`linear-gradient(135deg,${person.color},${person.color}cc)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:800,color:"#fff",flexShrink:0,boxShadow:`0 4px 10px ${person.color}33`}}>
+                        {person.label[0]}
+                      </div>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:14,fontWeight:800,color:"#0f0f1a",letterSpacing:-0.3}}>{person.label}</div>
+                        <div style={{fontSize:11,color:"#8888aa",marginTop:1}}>{totalTasks} task{totalTasks!==1?"s":""} · {doneTasks} done</div>
+                      </div>
+                      {/* Progress bar */}
+                      <div style={{width:80,height:5,background:"#f0f0f8",borderRadius:99,overflow:"hidden"}}>
+                        <div style={{height:"100%",borderRadius:99,background:`linear-gradient(90deg,${person.color},${person.color}88)`,width:totalTasks>0?`${(doneTasks/totalTasks)*100}%`:"0%",transition:"width 0.4s"}}/>
+                      </div>
+                      <span style={{fontSize:11,fontWeight:700,color:person.color,minWidth:32,textAlign:"right"}}>{totalTasks>0?Math.round((doneTasks/totalTasks)*100):0}%</span>
+                    </div>
+
+                    {/* 3 status columns */}
+                    <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"repeat(3,1fr)",gap:0}}>
+                      {STATUS_COLS.map((col,ci)=>{
+                        const colCards = personCards.filter((c:any)=>c.status===col.key);
+                        return(
+                          <div key={col.key}
+                            onDragOver={e=>e.preventDefault()}
+                            onDrop={()=>{
+                              if(!dragCard||dragFrom===col.key) return;
+                              // Move card between status columns
+                              setKanban((p:any)=>{
+                                const src = {...p};
+                                src[dragFrom] = src[dragFrom].filter((c:any)=>c.id!==dragCard.id);
+                                src[col.key] = [...src[col.key], dragCard];
+                                return src;
+                              });
+                              setDragCard(null); setDragFrom(null);
+                            }}
+                            style={{borderLeft:ci>0?"1px solid #f0f0f8":"none",padding:"10px 10px 10px"}}>
+                            {/* Col header */}
+                            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8,padding:"0 2px"}}>
+                              <span style={{fontSize:10,fontWeight:700,color:col.color,textTransform:"uppercase",letterSpacing:0.5}}>{col.label}</span>
+                              <span style={{background:`${col.color}18`,color:col.color,fontSize:9,fontWeight:700,borderRadius:99,padding:"1px 6px"}}>{colCards.length}</span>
+                            </div>
+                            {/* Cards */}
+                            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                              {colCards.map((card:any)=>{
+                                const ev=events.find((e:any)=>e.id===card.event)||{color:"#8888aa",emoji:"📌",label:"All"};
+                                const isEditing=editingCard?.col===col.key&&editingCard?.id===card.id;
+                                const priColor=PRIORITY_COLORS[card.priority]||"#8888aa";
+                                const aColor=AUTHOR_COLORS[card.assignee]||"#8888aa";
+                                return(
+                                  <div key={card.id} draggable={!isEditing} onDragStart={()=>!isEditing&&onDragStart(card,col.key)}
+                                    style={{background:"#f9f9fc",border:"1px solid #e4e4ef",borderLeft:`3px solid ${priColor}`,borderRadius:10,padding:"10px 11px",cursor:isEditing?"default":"grab",userSelect:"none",position:"relative",transition:"box-shadow 0.15s"}}>
+                                    {/* Priority badge + delete */}
+                                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+                                      <span style={{fontSize:8,fontWeight:700,color:priColor,background:`${priColor}18`,borderRadius:99,padding:"2px 7px",textTransform:"uppercase"}}>
+                                        {card.priority==="high"?"● High":card.priority==="med"?"● Med":"● Low"}
+                                      </span>
+                                      <button onClick={()=>deleteCard(col.key,card.id)}
+                                        style={{background:"transparent",border:"none",color:"#d1d5db",cursor:"pointer",fontSize:14,padding:0,lineHeight:1}}
+                                        onMouseEnter={e=>e.currentTarget.style.color="#ef4444"}
+                                        onMouseLeave={e=>e.currentTarget.style.color="#d1d5db"}>×</button>
+                                    </div>
+                                    {/* Title */}
+                                    {isEditing?(
+                                      <input autoFocus value={card.title}
+                                        onChange={e=>updateCardTitle(col.key,card.id,e.target.value)}
+                                        onBlur={()=>setEditingCard(null)}
+                                        onKeyDown={e=>{if(e.key==="Enter"||e.key==="Escape")setEditingCard(null);}}
+                                        style={{...inp(),fontSize:13,fontWeight:600,borderBottom:"2px solid #4F46E5",paddingBottom:2,marginBottom:6}}/>
+                                    ):(
+                                      <div style={{fontSize:13,fontWeight:600,color:"#0f0f1a",lineHeight:1.4,marginBottom:8,cursor:"text",wordBreak:"break-word"}}
+                                        onClick={()=>setEditingCard({col:col.key,id:card.id})}>{card.title}</div>
+                                    )}
+                                    {/* Footer */}
+                                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:4,flexWrap:"wrap"}}>
+                                      <div style={{display:"flex",gap:4,flexWrap:"wrap",alignItems:"center"}}>
+                                        <span style={{fontSize:8,fontWeight:600,color:ev.color,background:`${ev.color}18`,borderRadius:99,padding:"2px 6px",whiteSpace:"nowrap"}}>{ev.emoji} {ev.label.split(" ")[0]}</span>
+                                        {card.due&&card.due!=="TBD"&&<span style={{fontSize:8,color:"#8888aa"}}>📅 {card.due}</span>}
+                                      </div>
+                                      {/* Assignee pill — editable */}
+                                      <select value={card.assignee||""} onChange={e=>updateCardAssignee(col.key,card.id,e.target.value)}
+                                        style={{background:aColor&&card.assignee?`${aColor}18`:"#f4f4f8",border:`1px solid ${card.assignee?aColor:"#e4e4ef"}`,borderRadius:99,padding:"2px 8px",fontSize:9,fontWeight:700,color:card.assignee?aColor:"#8888aa",cursor:"pointer",fontFamily:"inherit",outline:"none"}}>
+                                        <option value="">Assign…</option>
+                                        {["Ajay","Bianca","Kamal","Anit"].map(n=><option key={n} value={n}>{n}</option>)}
+                                        {card.assignee&&!["Ajay","Bianca","Kamal","Anit",""].includes(card.assignee)&&<option value={card.assignee}>{card.assignee}</option>}
+                                      </select>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                              {colCards.length===0&&(
+                                <div style={{padding:"16px 8px",textAlign:"center",color:"#d1d5db",fontSize:11,border:"1px dashed #e4e4ef",borderRadius:8}}>Empty</div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              });
+            })()}
           </div>
         )}
 
