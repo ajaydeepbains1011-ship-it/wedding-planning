@@ -7,6 +7,172 @@ const SUPABASE_URL = "https://fnluwlvosijscqlxwsqt.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZubHV3bHZvc2lqc2NxbHh3c3F0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzOTg1MzIsImV4cCI6MjA5NTk3NDUzMn0.pOw_GNDrDud7hHFSotaY2ckFHvAbCfohVuNNr6LwTrE";
 const BUCKET = "wedding-files";
 
+// ─────────────────────────────────────────────────────────────────────────────
+// GMAIL CONFIG
+// ─────────────────────────────────────────────────────────────────────────────
+const GMAIL_CLIENT_ID = "834987931334-tse6juasd4p11dch5e7buop73q411b6d.apps.googleusercontent.com";
+const GMAIL_SCOPES = "https://www.googleapis.com/auth/gmail.readonly";
+
+function useGmail() {
+  const [token, setToken] = useState<string | null>(localStorage.getItem("gmail_token"));
+  const [emails, setEmails] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function signIn() {
+    const params = new URLSearchParams({
+      client_id: GMAIL_CLIENT_ID,
+      redirect_uri: window.location.origin,
+      response_type: "token",
+      scope: GMAIL_SCOPES,
+      prompt: "consent",
+    });
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+  }
+
+  function signOut() {
+    localStorage.removeItem("gmail_token");
+    setToken(null);
+    setEmails([]);
+  }
+
+  // Handle OAuth redirect
+  useEffect(() => {
+    const hash = new URLSearchParams(window.location.hash.replace("#", "?"));
+    const t = hash.get("access_token");
+    if (t) {
+      localStorage.setItem("gmail_token", t);
+      setToken(t);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
+  async function searchEmails(query: string) {
+    if (!token) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const searchRes = await fetch(
+        `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(query)}&maxResults=15`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (searchRes.status === 401) { signOut(); return; }
+      const searchData = await searchRes.json();
+      if (!searchData.messages) { setEmails([]); setLoading(false); return; }
+      const details = await Promise.all(
+        searchData.messages.slice(0, 10).map(async (m: any) => {
+          const r = await fetch(
+            `https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          return r.json();
+        })
+      );
+      setEmails(details.map((d: any) => {
+        const headers = d.payload?.headers || [];
+        const get = (name: string) => headers.find((h: any) => h.name === name)?.value || "";
+        return { id: d.id, subject: get("Subject"), from: get("From"), date: get("Date"), snippet: d.snippet };
+      }));
+    } catch(e) { setError("Failed to load emails"); }
+    setLoading(false);
+  }
+
+  return { token, signIn, signOut, searchEmails, emails, loading, error };
+}
+
+// Gmail Tab Component
+function GmailTab({ vendors }: { vendors: any[] }) {
+  const { token, signIn, signOut, searchEmails, emails, loading, error } = useGmail();
+  const [search, setSearch] = useState("");
+  const [selectedVendor, setSelectedVendor] = useState<string>("");
+
+  async function handleSearch() {
+    const q = selectedVendor || search;
+    if (!q) return;
+    await searchEmails(q + " wedding");
+  }
+
+  function formatDate(dateStr: string) {
+    try { return new Date(dateStr).toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" }); }
+    catch { return dateStr; }
+  }
+
+  return (
+    <div>
+      {!token ? (
+        <div style={{ textAlign:"center", padding:"40px 20px" }}>
+          <div style={{ fontSize:48, marginBottom:16 }}>📧</div>
+          <h2 style={{ color:"#F5ECD7", fontWeight:400, marginBottom:8 }}>Connect your Gmail</h2>
+          <p style={{ color:"#8A9DB0", fontSize:13, marginBottom:24, maxWidth:400, margin:"0 auto 24px" }}>
+            Sign in with your joint Gmail to search vendor emails, view threads, and track all wedding communication in one place.
+          </p>
+          <button onClick={signIn} style={{
+            background:"#F5ECD7", color:"#0F1923", border:"none", borderRadius:10,
+            padding:"12px 28px", cursor:"pointer", fontSize:14, fontWeight:700, fontFamily:"inherit",
+            display:"inline-flex", alignItems:"center", gap:10,
+          }}>
+            <span style={{ fontSize:18 }}>G</span> Sign in with Google
+          </button>
+        </div>
+      ) : (
+        <div>
+          {/* Header */}
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16, flexWrap:"wrap", gap:10 }}>
+            <div style={{ fontSize:11, color:"#10B981" }}>✓ Connected to Gmail</div>
+            <button onClick={signOut} style={{ background:"transparent", border:"1px solid #2A3A4A", color:"#8A9DB0", borderRadius:7, padding:"5px 12px", cursor:"pointer", fontSize:11, fontFamily:"inherit" }}>
+              Disconnect
+            </button>
+          </div>
+
+          {/* Search */}
+          <div style={{ background:"#141E2B", border:"1px solid #2A3A4A", borderRadius:12, padding:"16px 18px", marginBottom:18 }}>
+            <div style={{ fontSize:11, color:"#B8860B", letterSpacing:1, textTransform:"uppercase", marginBottom:12 }}>Search Vendor Emails</div>
+            <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:10 }}>
+              <select value={selectedVendor} onChange={e=>{setSelectedVendor(e.target.value);setSearch("");}}
+                style={{ background:"#0F1923", border:"1px solid #2A3A4A", color:"#C9A96E", borderRadius:8, padding:"7px 12px", fontSize:12, fontFamily:"inherit", flex:1, cursor:"pointer" }}>
+                <option value="">— Pick a vendor —</option>
+                {vendors.filter(v=>v.name!=="TBD"&&v.name!=="Booked").map(v=>(
+                  <option key={v.id} value={v.name} style={{ background:"#0F1923" }}>{v.name} ({v.category})</option>
+                ))}
+              </select>
+              <span style={{ color:"#4A5A6A", alignSelf:"center", fontSize:12 }}>or</span>
+              <input placeholder="Type any search term…" value={search} onChange={e=>{setSearch(e.target.value);setSelectedVendor("");}}
+                onKeyDown={e=>{ if(e.key==="Enter") handleSearch(); }}
+                style={{ background:"#0F1923", border:"1px solid #2A3A4A", color:"#F5ECD7", borderRadius:8, padding:"7px 12px", fontSize:12, fontFamily:"inherit", flex:1, outline:"none" }}/>
+              <button onClick={handleSearch} style={{ background:"#B8860B", color:"#0F1923", border:"none", borderRadius:8, padding:"7px 18px", cursor:"pointer", fontSize:12, fontFamily:"inherit", fontWeight:700 }}>
+                {loading ? "Searching…" : "Search"}
+              </button>
+            </div>
+            <div style={{ fontSize:10, color:"#4A5A6A" }}>Searches your joint Gmail inbox for matching emails</div>
+          </div>
+
+          {/* Results */}
+          {error && <div style={{ color:"#EF4444", fontSize:12, marginBottom:12 }}>{error}</div>}
+          {emails.length === 0 && !loading && (
+            <div style={{ textAlign:"center", padding:"30px", color:"#2A3A4A", fontSize:13 }}>
+              Pick a vendor or enter a search term above to find emails
+            </div>
+          )}
+          <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+            {emails.map(email => (
+              <a key={email.id} href={`https://mail.google.com/mail/u/0/#inbox/${email.id}`} target="_blank" rel="noreferrer"
+                style={{ textDecoration:"none", display:"block", background:"#141E2B", border:"1px solid #1E2D3D", borderRadius:10, padding:"14px 18px", transition:"border-color 0.2s" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12, marginBottom:6 }}>
+                  <div style={{ fontSize:13, fontWeight:600, color:"#F5ECD7", flex:1 }}>{email.subject || "(no subject)"}</div>
+                  <div style={{ fontSize:10, color:"#8A9DB0", whiteSpace:"nowrap", flexShrink:0 }}>{formatDate(email.date)}</div>
+                </div>
+                <div style={{ fontSize:11, color:"#B8860B", marginBottom:4 }}>{email.from}</div>
+                <div style={{ fontSize:11, color:"#8A9DB0", lineHeight:1.5 }}>{email.snippet}</div>
+                <div style={{ fontSize:10, color:"#2A3A4A", marginTop:6 }}>Click to open in Gmail →</div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 async function uploadFile(file: File, path: string): Promise<string | null> {
   try {
     const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
@@ -478,6 +644,7 @@ export default function WeddingPlanner() {
     {id:"overview",label:"Overview"},{id:"budget",label:"Budget"},{id:"payments",label:"Payments"},
     {id:"vendors",label:"Vendors"},{id:"kanban",label:"Kanban"},{id:"checklist",label:"Checklist"},
     {id:"guests",label:`Guests (${guests.length})`},{id:"notes",label:`Notes (${notes.length})`},
+    {id:"gmail",label:"📧 Gmail"},
   ];
   const inp=(extra={})=>({background:"transparent",border:"none",color:"#F5ECD7",fontSize:13,fontFamily:"Palatino,serif",outline:"none",width:"100%",...extra});
   const card=(extra={})=>({background:"linear-gradient(145deg,#1C2A3A,#0F1923)",border:"1px solid #2A3A4A",borderRadius:12,padding:"16px 18px",...extra});
@@ -1166,6 +1333,9 @@ export default function WeddingPlanner() {
             )}
           </div>
         )}
+
+        {/* ══ GMAIL ══ */}
+        {tab==="gmail" && <GmailTab vendors={vendors}/>}
 
       </div>
     </div>
