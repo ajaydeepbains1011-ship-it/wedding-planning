@@ -1078,6 +1078,7 @@ function PasscodeGate({ children }: any) {
   function attempt() {
     if (input.trim() === SITE_PASSCODE) {
       try { sessionStorage.setItem("wp_unlocked", "yes"); } catch(e) {}
+      try { localStorage.removeItem("wp_username"); } catch(e) {}
       setUnlocked(true);
     } else {
       setError(true);
