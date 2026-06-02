@@ -8,6 +8,7 @@ const PHOTOS = {
   p4: "https://fnluwlvosijscqlxwsqt.supabase.co/storage/v1/object/public/wedding-files/p4.jpg",
   p5: "https://fnluwlvosijscqlxwsqt.supabase.co/storage/v1/object/public/wedding-files/p5.jpg",
   p6: "https://fnluwlvosijscqlxwsqt.supabase.co/storage/v1/object/public/wedding-files/p6.jpg",
+  p8: "https://fnluwlvosijscqlxwsqt.supabase.co/storage/v1/object/public/wedding-files/p8.jpg",
 };
 
 const PHOTO_LIST = [PHOTOS.p1, PHOTOS.p2, PHOTOS.p3, PHOTOS.p4, PHOTOS.p5, PHOTOS.p6];
@@ -711,16 +712,28 @@ function LoginScreen({ nameInput, setNameInput, setUserName }: any) {
         <div className="fade-up" style={{ maxWidth:380, width:"100%" }}>
 
           {/* Header */}
-          <div style={{ marginBottom:36 }}>
-            <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"rgba(79,70,229,0.08)", border:"1px solid rgba(79,70,229,0.15)", borderRadius:99, padding:"5px 14px", marginBottom:16 }}>
-              <div style={{ width:6, height:6, borderRadius:"50%", background:"linear-gradient(135deg,#4F46E5,#7C3AED)", boxShadow:"0 0 0 3px rgba(79,70,229,0.2)" }}/>
-              <span style={{ fontSize:11, fontWeight:700, color:"#4F46E5", letterSpacing:0.5, textTransform:"uppercase" }}>Spring 2027 · Portugal</span>
-            </div>
-            <h1 style={{ margin:"0 0 10px", fontSize:38, fontWeight:800, letterSpacing:-1.5, lineHeight:1.05, background:"linear-gradient(135deg,#0f0f1a 0%,#4F46E5 60%,#7C3AED 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
-              Our wedding,<br/>perfectly planned.
+          <div style={{ marginBottom:32 }}>
+            {/* Live countdown */}
+            {(()=>{
+              const weddingDate = new Date("2027-04-25");
+              const now = new Date();
+              const days = Math.ceil((weddingDate.getTime()-now.getTime())/(1000*60*60*24));
+              const months = Math.floor(days/30);
+              return (
+                <div style={{display:"inline-flex",alignItems:"center",gap:7,background:"rgba(79,70,229,0.08)",border:"1px solid rgba(79,70,229,0.18)",borderRadius:99,padding:"6px 16px",marginBottom:20}}>
+                  <div style={{width:7,height:7,borderRadius:"50%",background:"linear-gradient(135deg,#4F46E5,#7C3AED)"}}/>
+                  <span style={{fontSize:12,fontWeight:700,color:"#4F46E5",letterSpacing:-0.1}}>
+                    {days} days · {months} months to go
+                  </span>
+                </div>
+              );
+            })()}
+            <h1 style={{ margin:"0 0 8px", fontSize:42, fontWeight:800, letterSpacing:-2, lineHeight:0.95, background:"linear-gradient(135deg,#0f0f1a 0%,#4F46E5 55%,#7C3AED 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
+              NATT × BAINS
             </h1>
-            <p style={{ color:"#8888aa", fontSize:14, margin:0, lineHeight:1.65, fontWeight:400 }}>
-              Budget, vendors, guests, timelines — all in one place for the whole family.
+            <div style={{fontSize:14,fontWeight:600,color:"#4a4a6a",letterSpacing:0.3,marginBottom:10}}>Spring 2027 · Portugal 🇵🇹</div>
+            <p style={{ color:"#8888aa", fontSize:13, margin:0, lineHeight:1.7, fontWeight:400 }}>
+              One place for our families to stay organized.
             </p>
           </div>
 
@@ -1049,7 +1062,127 @@ async function sharedLoad(key: string, fallback: any) { return localLoad(key, fa
 // ─────────────────────────────────────────────────────────────────────────────
 // APP
 // ─────────────────────────────────────────────────────────────────────────────
-export default function WeddingPlanner() {
+// ─────────────────────────────────────────────────────────────────────────────
+// PASSCODE GATE
+// ─────────────────────────────────────────────────────────────────────────────
+const SITE_PASSCODE = "BainsNatt2027";
+
+function PasscodeGate({ children }: any) {
+  const [unlocked, setUnlocked] = useState(() => {
+    try { return sessionStorage.getItem("wp_unlocked") === "yes"; } catch(e) { return false; }
+  });
+  const [input, setInput] = useState("");
+  const [error, setError] = useState(false);
+  const [shake, setShake] = useState(false);
+
+  function attempt() {
+    if (input.trim() === SITE_PASSCODE) {
+      try { sessionStorage.setItem("wp_unlocked", "yes"); } catch(e) {}
+      setUnlocked(true);
+    } else {
+      setError(true);
+      setShake(true);
+      setInput("");
+      setTimeout(() => setShake(false), 600);
+      setTimeout(() => setError(false), 2500);
+    }
+  }
+
+  if (unlocked) return children;
+
+  return (
+    <div style={{
+      minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center",
+      fontFamily:"'Plus Jakarta Sans',-apple-system,sans-serif",
+      position:"relative", overflow:"hidden",
+      background:"linear-gradient(135deg,#eef2ff 0%,#f5f3ff 40%,#e0f2fe 100%)",
+    }}>
+      {/* Background orbs */}
+      <div style={{position:"absolute",top:"-15%",left:"-10%",width:600,height:600,borderRadius:"50%",background:"radial-gradient(circle,rgba(79,70,229,0.15) 0%,transparent 70%)",filter:"blur(50px)"}}/>
+      <div style={{position:"absolute",bottom:"-10%",right:"-5%",width:500,height:500,borderRadius:"50%",background:"radial-gradient(circle,rgba(124,58,237,0.12) 0%,transparent 70%)",filter:"blur(50px)"}}/>
+      <div style={{position:"absolute",top:"40%",right:"10%",width:350,height:350,borderRadius:"50%",background:"radial-gradient(circle,rgba(14,165,233,0.12) 0%,transparent 70%)",filter:"blur(45px)"}}/>
+
+      <div style={{
+        background:"rgba(255,255,255,0.85)", backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)",
+        border:"1px solid rgba(255,255,255,0.6)",
+        borderRadius:28, padding:"44px 40px", width:"100%", maxWidth:400,
+        boxShadow:"0 24px 80px rgba(79,70,229,0.15)",
+        zIndex:1,
+        animation: shake ? "shake 0.5s cubic-bezier(.36,.07,.19,.97) both" : "fadeUp 0.4s ease both",
+      }}>
+        <style>{`
+          @keyframes shake {
+            10%, 90% { transform: translateX(-4px); }
+            20%, 80% { transform: translateX(6px); }
+            30%, 50%, 70% { transform: translateX(-8px); }
+            40%, 60% { transform: translateX(8px); }
+          }
+          @keyframes fadeUp {
+            from { opacity:0; transform:translateY(20px); }
+            to   { opacity:1; transform:translateY(0); }
+          }
+        `}</style>
+
+        {/* Photo */}
+        <div style={{textAlign:"center",marginBottom:28}}>
+          <div style={{width:90,height:90,borderRadius:24,margin:"0 auto 16px",overflow:"hidden",boxShadow:"0 12px 32px rgba(79,70,229,0.25)",border:"3px solid rgba(255,255,255,0.8)"}}>
+            <img src={PHOTOS.p8} alt="Ajay & Bianca" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top"}}/>
+          </div>
+          <h1 style={{margin:"0 0 6px",fontSize:26,fontWeight:800,letterSpacing:-1,color:"#0f0f1a"}}>Ajay & Bianca</h1>
+          <p style={{margin:0,fontSize:13,color:"#8888aa",fontWeight:500}}>Enter the passcode to continue</p>
+        </div>
+
+        {/* Input */}
+        <div style={{marginBottom:14}}>
+          <input
+            type="password"
+            value={input}
+            onChange={e=>{ setInput(e.target.value); setError(false); }}
+            onKeyDown={e=>{ if(e.key==="Enter") attempt(); }}
+            placeholder="Passcode"
+            autoFocus
+            style={{
+              width:"100%", boxSizing:"border-box",
+              background:"#f9f9fc", border:`1.5px solid ${error?"#ef4444":"#e4e4ef"}`,
+              borderRadius:14, padding:"13px 16px",
+              fontSize:15, fontWeight:600, color:"#0f0f1a",
+              fontFamily:"'Plus Jakarta Sans',sans-serif",
+              outline:"none", letterSpacing:2,
+              transition:"border-color 0.15s",
+              textAlign:"center",
+            }}
+            onFocus={e=>{ if(!error) e.target.style.borderColor="rgba(79,70,229,0.5)"; }}
+            onBlur={e=>{ if(!error) e.target.style.borderColor="#e4e4ef"; }}
+          />
+          {error && (
+            <div style={{textAlign:"center",marginTop:8,fontSize:12,color:"#ef4444",fontWeight:600}}>
+              Incorrect passcode. Try again.
+            </div>
+          )}
+        </div>
+
+        <button onClick={attempt} style={{
+          width:"100%", background:"linear-gradient(135deg,#4F46E5,#7C3AED)",
+          color:"#fff", border:"none", borderRadius:14, padding:"13px",
+          fontSize:14, fontWeight:800, cursor:"pointer",
+          boxShadow:"0 6px 20px rgba(79,70,229,0.35)",
+          transition:"opacity 0.15s, transform 0.1s",
+          fontFamily:"'Plus Jakarta Sans',sans-serif",
+          letterSpacing:-0.2,
+        }}
+          onMouseEnter={e=>{ e.currentTarget.style.opacity="0.92"; e.currentTarget.style.transform="translateY(-1px)"; }}
+          onMouseLeave={e=>{ e.currentTarget.style.opacity="1"; e.currentTarget.style.transform="translateY(0)"; }}
+        >
+          Enter →
+        </button>
+
+
+      </div>
+    </div>
+  );
+}
+
+function WeddingPlannerApp() {
   const [ready,setReady]       = useState(false);
   const [tab,setTab]           = useState("overview");
   const [userName,setUserName] = useState("");
@@ -2380,4 +2513,8 @@ function NotesTab({notes,userName,newNote,setNewNote,addNote,deleteNote,toggleRe
       )}
     </div>
   );
+}
+
+export default function WeddingPlanner() {
+  return <PasscodeGate><WeddingPlannerApp/></PasscodeGate>;
 }
