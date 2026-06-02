@@ -1205,7 +1205,7 @@ function WeddingPlannerApp() {
   const [dragCard,setDragCard]         = useState(null);
   const [dragFrom,setDragFrom]         = useState(null);
   const [showNewCard,setShowNewCard]   = useState(null);
-  const [newCard,setNewCard]           = useState({title:"",event:"wedding",priority:"med",due:""});
+  const [newCard,setNewCard]           = useState({title:"",event:"wedding",priority:"med",due:"",assignee:""});
   const [editingCard,setEditingCard]   = useState(null);
   const [newCheckItem,setNewCheckItem] = useState({});
   const [editingCheck,setEditingCheck] = useState(null);
@@ -1217,6 +1217,8 @@ function WeddingPlannerApp() {
   const [newGuest,setNewGuest]         = useState({name:"",side:"Bride",table:"",dietary:"",rsvp:"Not Sent",events:[],notes:""});
   const [guestSort,setGuestSort]       = useState("name");
   const [showAddPayment,setShowAddPayment]= useState(false);
+  const [showAddVendor,setShowAddVendor]   = useState(false);
+  const [newVendor,setNewVendor]           = useState({event:"wedding",category:"",name:"",contact:"",costEur:0,depositEur:0,status:"Research",notes:""});
   const [newPayment,setNewPayment]     = useState({description:"",amountEur:"",paidBy:"Ajay Bains",event:"wedding",date:new Date().toISOString().slice(0,10),notes:""});
   const [editingDate,setEditingDate]   = useState(null); // event id being edited
 
@@ -1317,9 +1319,10 @@ function WeddingPlannerApp() {
   function addCard(col){
     if(!newCard.title.trim())return;
     setKanban(p=>({...p,[col]:[...p[col],{id:uid(),...newCard,due:newCard.due||"TBD"}]}));
-    setNewCard({title:"",event:"wedding",priority:"med",due:""});setShowNewCard(null);
+    setNewCard({title:"",event:"wedding",priority:"med",due:"",assignee:""});setShowNewCard(null);
   }
   function updateCardTitle(col,id,title){setKanban(p=>({...p,[col]:p[col].map(c=>c.id===id?{...c,title}:c)}));}
+  function updateCardAssignee(col,id,assignee){setKanban(p=>({...p,[col]:p[col].map(c=>c.id===id?{...c,assignee}:c)}));}
 
   // ── Checklist ──
   function toggleCheck(ci,ii){setChecklist(p=>p.map((c,i)=>i!==ci?c:{...c,items:c.items.map((it,j)=>j!==ii?it:{...it,done:!it.done})}));}
@@ -1336,7 +1339,18 @@ function WeddingPlannerApp() {
 
   // ── Vendors ──
   function updateVendor(id,field,val){setVendors(p=>p.map(v=>v.id===id?{...v,[field]:["costEur","depositEur"].includes(field)?Number(val)||0:val}:v));}
-  function addVendor(){setVendors(p=>[...p,{id:Date.now(),event:"wedding",category:"",name:"New Vendor",contact:"",costEur:0,depositEur:0,status:"Research",notes:""}]);}
+  function addVendor(){
+    if(!newVendor.name.trim()) return;
+    const v = {id:Date.now(),...newVendor,costEur:Number(newVendor.costEur)||0,depositEur:Number(newVendor.depositEur)||0};
+    setVendors(p=>{
+      const updated = [...p, v];
+      try { localStorage.setItem("wp_vendors", JSON.stringify(updated)); } catch(e) {}
+      sharedSave("wp_vendors", updated);
+      return updated;
+    });
+    setNewVendor({event:"wedding",category:"",name:"",contact:"",costEur:0,depositEur:0,status:"Research",notes:""});
+    setShowAddVendor(false);
+  }
   function deleteVendor(id){setVendors(p=>p.filter(v=>v.id!==id));}
 
   // ── Payments ──
@@ -1893,8 +1907,108 @@ function WeddingPlannerApp() {
             </div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
               <h2 style={{margin:0,fontSize:11,letterSpacing:3,color:"#111827",textTransform:"uppercase",fontWeight:400}}>Vendor Tracker</h2>
-              <button onClick={addVendor} className="primary-btn">+ Add Vendor →</button>
+              <button onClick={()=>setShowAddVendor(true)} className="primary-btn">+ Add Vendor</button>
             </div>
+            {/* ── Add Vendor Modal ── */}
+            {showAddVendor&&(
+              <div style={{position:"fixed",inset:0,background:"rgba(10,10,20,0.5)",backdropFilter:"blur(8px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={()=>setShowAddVendor(false)}>
+                <div style={{background:"#fff",borderRadius:24,padding:"28px 28px",width:"100%",maxWidth:480,boxShadow:"0 24px 80px rgba(79,70,229,0.18)",animation:"scaleIn 0.2s ease"}} onClick={e=>e.stopPropagation()}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:22}}>
+                    <div>
+                      <div style={{fontSize:18,fontWeight:800,color:"#0f0f1a",letterSpacing:-0.5}}>Add Vendor</div>
+                      <div style={{fontSize:12,color:"#8888aa",marginTop:2}}>All costs in EUR</div>
+                    </div>
+                    <button onClick={()=>setShowAddVendor(false)} style={{background:"#f4f4f8",border:"none",borderRadius:99,width:32,height:32,cursor:"pointer",fontSize:18,color:"#8888aa",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+                  </div>
+                  <div style={{display:"flex",flexDirection:"column",gap:12}}>
+                    {/* Name */}
+                    <div>
+                      <div style={{fontSize:11,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.6,marginBottom:5}}>Vendor Name *</div>
+                      <input autoFocus value={newVendor.name} onChange={e=>setNewVendor(p=>({...p,name:e.target.value}))}
+                        placeholder="e.g. Quinta de Santana"
+                        style={{width:"100%",boxSizing:"border-box",background:"#f9f9fc",border:"1.5px solid #e4e4ef",borderRadius:12,padding:"10px 14px",fontSize:13,color:"#0f0f1a",fontFamily:"inherit",outline:"none"}}
+                        onFocus={e=>e.target.style.borderColor="rgba(79,70,229,0.4)"}
+                        onBlur={e=>e.target.style.borderColor="#e4e4ef"}/>
+                    </div>
+                    {/* Category + Event */}
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                      <div>
+                        <div style={{fontSize:11,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.6,marginBottom:5}}>Category</div>
+                        <input value={newVendor.category} onChange={e=>setNewVendor(p=>({...p,category:e.target.value}))}
+                          placeholder="e.g. Venue"
+                          style={{width:"100%",boxSizing:"border-box",background:"#f9f9fc",border:"1.5px solid #e4e4ef",borderRadius:12,padding:"10px 14px",fontSize:13,color:"#0f0f1a",fontFamily:"inherit",outline:"none"}}
+                          onFocus={e=>e.target.style.borderColor="rgba(79,70,229,0.4)"}
+                          onBlur={e=>e.target.style.borderColor="#e4e4ef"}/>
+                      </div>
+                      <div>
+                        <div style={{fontSize:11,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.6,marginBottom:5}}>Event</div>
+                        <select value={newVendor.event} onChange={e=>setNewVendor(p=>({...p,event:e.target.value}))}
+                          style={{width:"100%",boxSizing:"border-box",background:"#f9f9fc",border:"1.5px solid #e4e4ef",borderRadius:12,padding:"10px 14px",fontSize:13,color:"#0f0f1a",fontFamily:"inherit",outline:"none",cursor:"pointer"}}>
+                          {[...events.map(e=>({id:e.id,label:e.label})),{id:"all",label:"All Events"}].map(ev=><option key={ev.id} value={ev.id}>{ev.label}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                    {/* Contact */}
+                    <div>
+                      <div style={{fontSize:11,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.6,marginBottom:5}}>Contact / Email</div>
+                      <input value={newVendor.contact} onChange={e=>setNewVendor(p=>({...p,contact:e.target.value}))}
+                        placeholder="e.g. info@venue.pt"
+                        style={{width:"100%",boxSizing:"border-box",background:"#f9f9fc",border:"1.5px solid #e4e4ef",borderRadius:12,padding:"10px 14px",fontSize:13,color:"#0f0f1a",fontFamily:"inherit",outline:"none"}}
+                        onFocus={e=>e.target.style.borderColor="rgba(79,70,229,0.4)"}
+                        onBlur={e=>e.target.style.borderColor="#e4e4ef"}/>
+                    </div>
+                    {/* Costs */}
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                      <div>
+                        <div style={{fontSize:11,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.6,marginBottom:5}}>Cost (€)</div>
+                        <input type="number" value={newVendor.costEur||""} onChange={e=>setNewVendor(p=>({...p,costEur:e.target.value}))}
+                          placeholder="0"
+                          style={{width:"100%",boxSizing:"border-box",background:"#f9f9fc",border:"1.5px solid #e4e4ef",borderRadius:12,padding:"10px 14px",fontSize:13,color:"#0f0f1a",fontFamily:"inherit",outline:"none"}}
+                          onFocus={e=>e.target.style.borderColor="rgba(79,70,229,0.4)"}
+                          onBlur={e=>e.target.style.borderColor="#e4e4ef"}/>
+                      </div>
+                      <div>
+                        <div style={{fontSize:11,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.6,marginBottom:5}}>Deposit (€)</div>
+                        <input type="number" value={newVendor.depositEur||""} onChange={e=>setNewVendor(p=>({...p,depositEur:e.target.value}))}
+                          placeholder="0"
+                          style={{width:"100%",boxSizing:"border-box",background:"#f9f9fc",border:"1.5px solid #e4e4ef",borderRadius:12,padding:"10px 14px",fontSize:13,color:"#0f0f1a",fontFamily:"inherit",outline:"none"}}
+                          onFocus={e=>e.target.style.borderColor="rgba(79,70,229,0.4)"}
+                          onBlur={e=>e.target.style.borderColor="#e4e4ef"}/>
+                      </div>
+                    </div>
+                    {/* Status */}
+                    <div>
+                      <div style={{fontSize:11,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.6,marginBottom:5}}>Status</div>
+                      <select value={newVendor.status} onChange={e=>setNewVendor(p=>({...p,status:e.target.value}))}
+                        style={{width:"100%",boxSizing:"border-box",background:"#f9f9fc",border:"1.5px solid #e4e4ef",borderRadius:12,padding:"10px 14px",fontSize:13,color:"#0f0f1a",fontFamily:"inherit",outline:"none",cursor:"pointer"}}>
+                        {["Research","Inquired","Quoted","Booked","Deposit Paid","Paid in Full","Cancelled"].map(s=><option key={s}>{s}</option>)}
+                      </select>
+                    </div>
+                    {/* Notes */}
+                    <div>
+                      <div style={{fontSize:11,fontWeight:700,color:"#8888aa",textTransform:"uppercase",letterSpacing:0.6,marginBottom:5}}>Notes</div>
+                      <input value={newVendor.notes} onChange={e=>setNewVendor(p=>({...p,notes:e.target.value}))}
+                        placeholder="Any notes…"
+                        style={{width:"100%",boxSizing:"border-box",background:"#f9f9fc",border:"1.5px solid #e4e4ef",borderRadius:12,padding:"10px 14px",fontSize:13,color:"#0f0f1a",fontFamily:"inherit",outline:"none"}}
+                        onFocus={e=>e.target.style.borderColor="rgba(79,70,229,0.4)"}
+                        onBlur={e=>e.target.style.borderColor="#e4e4ef"}/>
+                    </div>
+                    {/* Buttons */}
+                    <div style={{display:"flex",gap:10,marginTop:4}}>
+                      <button onClick={()=>setShowAddVendor(false)}
+                        style={{flex:1,background:"#f4f4f8",border:"none",borderRadius:12,padding:"12px",cursor:"pointer",fontSize:13,fontWeight:600,color:"#8888aa",fontFamily:"inherit"}}>
+                        Cancel
+                      </button>
+                      <button onClick={addVendor}
+                        style={{flex:2,background:"linear-gradient(135deg,#4F46E5,#7C3AED)",border:"none",borderRadius:12,padding:"12px",cursor:"pointer",fontSize:13,fontWeight:700,color:"#fff",fontFamily:"inherit",boxShadow:"0 4px 14px rgba(79,70,229,0.3)",opacity:newVendor.name.trim()?"1":"0.5"}}>
+                        Add Vendor →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="vendor-scroll" style={{overflowX:"auto"}}>
               <table className="vendor-table" style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
                 <thead>
@@ -1992,6 +2106,10 @@ function WeddingPlannerApp() {
                           {["high","med","low"].map(p=><option key={p} value={p} style={{background:"#f9f9fc",color:PRIORITY_COLORS[p]}}>{p}</option>)}
                         </select>
                         <input placeholder="Due e.g. 2026-10" value={newCard.due} onChange={e=>setNewCard(n=>({...n,due:e.target.value}))} style={{...inp(),width:100,border:"1px solid #e5e7eb",borderRadius:5,padding:"2px 5px",fontSize:10}}/>
+                        <select value={newCard.assignee} onChange={e=>setNewCard(n=>({...n,assignee:e.target.value}))} style={{background:"#f9f9fc",border:"1px solid #e5e7eb",color:"#111827",fontSize:10,borderRadius:5,padding:"2px 5px",fontFamily:"inherit"}}>
+                          <option value="">Assignee</option>
+                          {["Ajay","Bianca","Kamal","Anit"].map(n=><option key={n} value={n}>{n}</option>)}
+                        </select>
                       </div>
                       <div style={{display:"flex",gap:5}}>
                         <button onClick={()=>addCard(col.key)} style={{background:col.color,color:"#fff",border:"none",borderRadius:5,padding:"4px 10px",cursor:"pointer",fontSize:10,fontFamily:"inherit",fontWeight:700}}>Add</button>
@@ -2001,25 +2119,59 @@ function WeddingPlannerApp() {
                   )}
                   <div style={{padding:"6px",display:"flex",flexDirection:"column",gap:5}}>
                     {kanban[col.key].map(card=>{
-                      const ev=events.find(e=>e.id===card.event)||{color:"#888",emoji:"📌",label:"All"};
+                      const ev=events.find(e=>e.id===card.event)||{color:"#8888aa",emoji:"📌",label:"All"};
                       const isEditing=editingCard?.col===col.key&&editingCard?.id===card.id;
+                      const priColor=PRIORITY_COLORS[card.priority];
+                      const assigneeColor=AUTHOR_COLORS[card.assignee]||null;
                       return(
                         <div key={card.id} draggable={!isEditing} onDragStart={()=>!isEditing&&onDragStart(card,col.key)}
-                          style={{background:"#ffffff",border:"1px solid #e5e7eb",borderLeft:`3px solid ${PRIORITY_COLORS[card.priority]}`,borderRadius:7,padding:"8px 10px",cursor:isEditing?"default":"grab",userSelect:"none",position:"relative"}}>
-                          {isEditing?(
-                            <input autoFocus value={card.title} onChange={e=>updateCardTitle(col.key,card.id,e.target.value)} onBlur={()=>setEditingCard(null)} onKeyDown={e=>{if(e.key==="Enter"||e.key==="Escape")setEditingCard(null);}} style={{...inp(),fontSize:11,borderBottom:"1px solid #6366f1",paddingBottom:2}}/>
-                          ):(
-                            <div style={{fontSize:11,color:"#0f0f1a",lineHeight:1.4,cursor:"text"}} onClick={()=>setEditingCard({col:col.key,id:card.id})}>{card.title}</div>
-                          )}
-                          <div style={{display:"flex",justifyContent:"space-between",marginTop:5,alignItems:"center"}}>
-                            <span style={{fontSize:8,color:ev.color}}>{ev.emoji} {ev.label}</span>
-                            <span style={{fontSize:8,color:"#6b7280"}}>↳ {card.due}</span>
+                          className="kanban-card"
+                          style={{borderTop:`3px solid ${priColor}`,cursor:isEditing?"default":"grab",position:"relative"}}>
+                          {/* Priority + delete row */}
+                          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
+                            <span style={{fontSize:9,fontWeight:700,color:priColor,background:`${priColor}18`,borderRadius:99,padding:"2px 8px",textTransform:"uppercase",letterSpacing:0.5}}>
+                              {card.priority==="high"?"🔴 High":card.priority==="med"?"🟡 Med":"🟢 Low"}
+                            </span>
+                            <button onClick={()=>deleteCard(col.key,card.id)} style={{background:"transparent",border:"none",color:"#d1d5db",cursor:"pointer",fontSize:15,padding:"0 2px",lineHeight:1}}
+                              onMouseEnter={e=>e.currentTarget.style.color="#ef4444"}
+                              onMouseLeave={e=>e.currentTarget.style.color="#d1d5db"}>×</button>
                           </div>
-                          <button onClick={()=>deleteCard(col.key,card.id)} style={{position:"absolute",top:4,right:5,background:"none",border:"none",color:"#d1d5db",cursor:"pointer",fontSize:12,padding:0}}>×</button>
+                          {/* Title */}
+                          {isEditing?(
+                            <input autoFocus value={card.title}
+                              onChange={e=>updateCardTitle(col.key,card.id,e.target.value)}
+                              onBlur={()=>setEditingCard(null)}
+                              onKeyDown={e=>{if(e.key==="Enter"||e.key==="Escape")setEditingCard(null);}}
+                              style={{...inp(),fontSize:13,fontWeight:600,borderBottom:"2px solid #4F46E5",paddingBottom:2,marginBottom:8}}/>
+                          ):(
+                            <div style={{fontSize:13,fontWeight:600,color:"#0f0f1a",lineHeight:1.45,marginBottom:8,cursor:"text",wordBreak:"break-word"}}
+                              onClick={()=>setEditingCard({col:col.key,id:card.id})}>{card.title}</div>
+                          )}
+                          {/* Footer row */}
+                          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:6}}>
+                            <div style={{display:"flex",alignItems:"center",gap:5,flexWrap:"wrap"}}>
+                              {/* Event badge */}
+                              <span style={{fontSize:9,fontWeight:600,color:ev.color,background:`${ev.color}18`,borderRadius:99,padding:"2px 7px",whiteSpace:"nowrap"}}>
+                                {ev.emoji} {ev.label.split(" ")[0]}
+                              </span>
+                              {/* Due date */}
+                              {card.due&&<span style={{fontSize:9,color:"#8888aa",fontWeight:500}}>📅 {card.due}</span>}
+                            </div>
+                            {/* Assignee */}
+                            <select value={card.assignee||""} onChange={e=>updateCardAssignee(col.key,card.id,e.target.value)}
+                              style={{background:assigneeColor?`${assigneeColor}18`:"#f4f4f8",border:`1px solid ${assigneeColor||"#e4e4ef"}`,borderRadius:99,padding:"2px 7px",fontSize:9,fontWeight:700,color:assigneeColor||"#8888aa",cursor:"pointer",fontFamily:"inherit",outline:"none",maxWidth:80}}>
+                              <option value="">Assign</option>
+                              {["Ajay","Bianca","Kamal","Anit"].map(n=><option key={n} value={n}>{n}</option>)}
+                            </select>
+                          </div>
                         </div>
                       );
                     })}
-                    {kanban[col.key].length===0&&showNewCard!==col.key&&<div style={{padding:"16px",textAlign:"center",color:"#d1d5db",fontSize:11}}>Drop cards here</div>}
+                    {kanban[col.key].length===0&&showNewCard!==col.key&&(
+                      <div style={{padding:"24px 16px",textAlign:"center",color:"#c8c8e0",fontSize:12,border:"1.5px dashed #e4e4ef",borderRadius:12}}>
+                        Drop cards here
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
