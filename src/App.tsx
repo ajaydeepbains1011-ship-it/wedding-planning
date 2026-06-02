@@ -1530,7 +1530,7 @@ function WeddingPlannerApp() {
 
       {/* ── CINEMATIC HERO STRIP (overview only) ── */}
       {tab==="overview" && (
-        <div style={{position:"relative",height:isMobile?200:isTablet?250:300,overflow:"hidden",background:"#0f0f1a",flexShrink:0}}>
+        <div style={{position:"relative",height:isMobile?260:isTablet?260:320,overflow:"hidden",background:"#0f0f1a",flexShrink:0}}>
           <style>{`
             @keyframes filmroll {
               0%   { transform: translate3d(0,0,0); }
@@ -1538,8 +1538,6 @@ function WeddingPlannerApp() {
             }
             .filmroll-track {
               display: flex;
-              flex-direction: row;
-              align-items: stretch;
               position: absolute;
               top: 0; left: 0; bottom: 0;
               animation: filmroll 30s linear infinite;
@@ -1564,62 +1562,35 @@ function WeddingPlannerApp() {
             ))}
           </div>
 
-          {/* Overlays */}
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(15,15,26,0.25) 0%,rgba(15,15,26,0.7) 100%)",pointerEvents:"none"}}/>
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(to right,rgba(15,15,26,0.5) 0%,transparent 20%,transparent 80%,rgba(15,15,26,0.5) 100%)",pointerEvents:"none"}}/>
+          {/* Dark overlays */}
+          <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(15,15,26,0.15) 0%,rgba(15,15,26,0.78) 100%)",pointerEvents:"none"}}/>
+          <div style={{position:"absolute",inset:0,background:"linear-gradient(to right,rgba(15,15,26,0.4) 0%,transparent 25%,transparent 75%,rgba(15,15,26,0.4) 100%)",pointerEvents:"none"}}/>
 
-          {/* Content overlay */}
-          <div style={{
-  position:isMobile?"relative":"absolute",
-  inset:isMobile?undefined:0,
-  display:"flex",
-  flexDirection:"column",
-  justifyContent:"center",
-  padding:isMobile?"18px 14px":"20px 28px",
-  gap:isMobile?10:14
-}}>
+          {/* Stats overlay — always absolute, always on top of filmstrip */}
+          <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:isMobile?"10px 12px 14px":"20px 28px 22px"}}>
             <div style={{maxWidth:1240,width:"100%",margin:"0 auto"}}>
-
               {/* Title */}
-              {!isMobile && (
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:14}}>
-                  <div>
-                    <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.55)",textTransform:"uppercase",letterSpacing:2,marginBottom:3}}>Wedding Dashboard</div>
-                    <div style={{fontSize:isTablet?22:28,fontWeight:800,color:"#fff",letterSpacing:-1,lineHeight:1,textShadow:"0 2px 20px rgba(0,0,0,0.4)"}}>Ajay & Bianca 💍</div>
-                  </div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,0.6)",fontWeight:500,textAlign:"right"}}>
-                    Portugal · Spring 2027<br/><span style={{opacity:0.7}}>5 events · $500K budget</span>
-                  </div>
+              <div style={{marginBottom:isMobile?8:12,display:"flex",justifyContent:"space-between",alignItems:"flex-end"}}>
+                <div>
+                  {!isMobile&&<div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:2,marginBottom:3}}>Wedding Dashboard</div>}
+                  <div style={{fontSize:isMobile?15:26,fontWeight:800,color:"#fff",letterSpacing:-0.5,lineHeight:1,textShadow:"0 2px 16px rgba(0,0,0,0.5)"}}>Ajay & Bianca 💍</div>
+                  {isMobile&&<div style={{fontSize:10,color:"rgba(255,255,255,0.55)",marginTop:2}}>Portugal · Spring 2027</div>}
                 </div>
-              )}
-              {isMobile && (
-                <div style={{marginBottom:10,background:"rgba(15,15,26,0.62)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:16,padding:"14px 14px"}}>
-                  <div style={{fontSize:22,fontWeight:900,color:"#fff",letterSpacing:-0.8,textShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>Ajay & Bianca 💍</div>
-                  <div style={{fontSize:12,color:"rgba(255,255,255,0.78)",fontWeight:600,marginTop:3}}>Portugal · Spring 2027 · Wedding Dashboard</div>
-                </div>
-              )}
-
-              {/* Stat cards grid — 2 col mobile, 3 col tablet, 6 col desktop */}
-              <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr 1fr":isTablet?"repeat(3,1fr)":"repeat(6,1fr)",gap:8}}>
-                {[
-                  {label:"Budget",       value:"$500K",              sub:"overall target",                        accent:"rgba(255,255,255,0.95)"},
-                  {label:"Paid (€)",     value:fmtEUR(totalPaidEur), sub:fmtUSD(totalPaidUsd)+" USD",             accent:"#FCD34D"},
-                  {label:"Bains",        value:fmtEUR(ajayPaidEur),  sub:fmtUSD(eurToUsd(ajayPaidEur,eurRate)),   accent:"#60A5FA"},
-                  {label:"Natt",         value:fmtEUR(biancaPaidEur),sub:fmtUSD(eurToUsd(biancaPaidEur,eurRate)), accent:"#C084FC"},
-                  {label:"Tasks Left",   value:String(tasksLeft),     sub:"open items",                            accent:"#34D399"},
-                  {label:"Checklist",    value:`${checkDone}/${checkTotal}`,sub:"complete",                       accent:"#FB923C"},
-                ].map(c=>(
-                  <div key={c.label} style={{
-                    background:"rgba(10,10,20,0.6)",
-                    backdropFilter:"blur(16px)",
-                    WebkitBackdropFilter:"blur(16px)",
-                    border:"1px solid rgba(255,255,255,0.1)",
-                    borderRadius:isMobile?12:14,
-                    padding:isMobile?"10px 12px":"12px 14px",
-                  }}>
-                    <div style={{fontSize:8,fontWeight:700,color:"rgba(255,255,255,0.45)",textTransform:"uppercase",letterSpacing:0.8,marginBottom:4}}>{c.label}</div>
-                    <div style={{fontSize:isMobile?14:18,fontWeight:900,color:c.accent,letterSpacing:-0.5,lineHeight:1.15,whiteSpace:"normal",overflowWrap:"anywhere",wordBreak:"break-word"}}>{c.value}</div>
-                    <div style={{fontSize:isMobile?8:9,color:"rgba(255,255,255,0.45)",marginTop:5,fontWeight:600,lineHeight:1.25,whiteSpace:"normal",overflowWrap:"anywhere"}}>{c.sub}</div>
+                {!isMobile&&<div style={{fontSize:11,color:"rgba(255,255,255,0.55)",textAlign:"right"}}>Portugal · Spring 2027<br/><span style={{opacity:0.7}}>5 events · $500K</span></div>}
+              </div>
+              {/* 3-col on mobile, 6-col on desktop */}
+              <div style={{display:"grid",gridTemplateColumns:isMobile?"repeat(3,1fr)":isTablet?"repeat(3,1fr)":"repeat(6,1fr)",gap:isMobile?5:8}}>
+                {([
+                  {label:"Budget",    value:"$500K",                             accent:"rgba(255,255,255,0.95)"},
+                  {label:"Paid (€)",  value:fmtEUR(totalPaidEur),                accent:"#FCD34D"},
+                  {label:"Tasks",     value:String(tasksLeft),                   accent:"#34D399"},
+                  {label:"Bains",     value:fmtEUR(ajayPaidEur),                 accent:"#60A5FA"},
+                  {label:"Natt",      value:fmtEUR(biancaPaidEur),               accent:"#C084FC"},
+                  {label:"Checks",    value:`${checkDone}/${checkTotal}`,         accent:"#FB923C"},
+                ] as any[]).map((c:any)=>(
+                  <div key={c.label} style={{background:"rgba(8,8,18,0.68)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:isMobile?10:14,padding:isMobile?"8px 8px":"12px 14px"}}>
+                    <div style={{fontSize:isMobile?7:8,fontWeight:700,color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:0.6,marginBottom:3}}>{c.label}</div>
+                    <div style={{fontSize:isMobile?11:17,fontWeight:800,color:c.accent,letterSpacing:-0.5,lineHeight:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.value}</div>
                   </div>
                 ))}
               </div>
