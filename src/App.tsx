@@ -657,7 +657,7 @@ function LoginScreen({ nameInput, setNameInput, setUserName }: any) {
     return () => clearInterval(iv);
   }, []);
 
-  const roles: Record<string,string> = { Ajay:"Groom", Bianca:"Bride", Kamal:"Groom's mom", Anit:"Bride's mom" };
+ const loginNames = ["Ajay Bains", "Bianca Natt", "Anit Natt", "Kamal Bains"];
 
   return (
     <div style={{ minHeight:"100vh", display:"flex", fontFamily:"'Plus Jakarta Sans',-apple-system,sans-serif", position:"relative", overflow:"hidden" }}>
@@ -748,7 +748,7 @@ function LoginScreen({ nameInput, setNameInput, setUserName }: any) {
                     {n[0]}
                   </div>
                   <div style={{ fontSize:14, fontWeight:700, color:"#0f0f1a", letterSpacing:-0.2 }}>{n}</div>
-                  <div style={{ fontSize:11, color:"#8888aa", marginTop:2, fontWeight:500 }}>{roles[n]}</div>
+              
                 </button>
               ))}
             </div>
@@ -961,7 +961,16 @@ const STATUS_COLORS  = { "Research":"#94a3b8","Inquired":"#F59E0B","Booked":"#10
 const PRIORITY_COLORS= { high:"#EF4444", med:"#F59E0B", low:"#10B981" };
 const RSVP_COLORS    = { "Confirmed":"#10B981","Pending":"#F59E0B","Declined":"#EF4444","Not Sent":"#94a3b8" };
 const SIDE_COLORS    = { "Bride":"#8E44AD","Groom":"#1A7FC1","Both":"#4F46E5" };
-const AUTHOR_COLORS  = { "Ajay":"#1A7FC1","Bianca":"#8E44AD","Kamal":"#E8A020","Anit":"#C0392B" };
+const AUTHOR_COLORS  = {
+  "Ajay":"#1A7FC1",
+  "Bianca":"#8E44AD",
+  "Kamal":"#E8A020",
+  "Anit":"#C0392B",
+  "Ajay Bains":"#1A7FC1",
+  "Bianca Natt":"#8E44AD",
+  "Kamal Bains":"#E8A020",
+  "Anit Natt":"#C0392B",
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
@@ -1015,7 +1024,7 @@ export default function WeddingPlanner() {
   const [newGuest,setNewGuest]         = useState({name:"",side:"Bride",table:"",dietary:"",rsvp:"Not Sent",events:[],notes:""});
   const [guestSort,setGuestSort]       = useState("name");
   const [showAddPayment,setShowAddPayment]= useState(false);
-  const [newPayment,setNewPayment]     = useState({description:"",amountEur:"",paidBy:"Ajay",event:"wedding",date:new Date().toISOString().slice(0,10),notes:""});
+  const [newPayment,setNewPayment]     = useState({description:"",amountEur:"",paidBy:"Ajay Bains",event:"wedding",date:new Date().toISOString().slice(0,10),notes:""});
   const [editingDate,setEditingDate]   = useState(null); // event id being edited
 
   const firstRender = useRef(true);
@@ -1110,7 +1119,7 @@ export default function WeddingPlanner() {
   function addPayment(){
     if(!newPayment.description.trim()||!newPayment.amountEur)return;
     setPayments(p=>[...p,{id:uid(),...newPayment,amountEur:Number(newPayment.amountEur)}]);
-    setNewPayment({description:"",amountEur:"",paidBy:"Ajay",event:"wedding",date:new Date().toISOString().slice(0,10),notes:""});
+    setNewPayment({description:"",amountEur:"",paidBy:"Ajay Bains",event:"wedding",date:new Date().toISOString().slice(0,10),notes:""});
     setShowAddPayment(false);
   }
   function deletePayment(id){setPayments(p=>p.filter(x=>x.id!==id));}
@@ -1230,7 +1239,14 @@ export default function WeddingPlanner() {
 
       {/* ── CINEMATIC HERO STRIP (overview only) ── */}
       {tab==="overview" && (
-        <div style={{position:"relative",height:isMobile?180:isTablet?240:300,overflow:"hidden",background:"#0f0f1a"}}>
+        <div style={{
+  position:"relative",
+  minHeight:isMobile?360:isTablet?300:300,
+  height:isMobile?"auto":isTablet?240:300,
+  overflow:"hidden",
+  background:"#0f0f1a",
+  paddingBottom:isMobile?18:0
+}}>
           <style>{`
             @keyframes filmroll {
               0%   { transform: translateX(0); }
@@ -1266,7 +1282,15 @@ export default function WeddingPlanner() {
           <div style={{position:"absolute",inset:0,background:"linear-gradient(to right,rgba(15,15,26,0.4) 0%,transparent 25%,transparent 75%,rgba(15,15,26,0.4) 100%)"}}/>
 
           {/* Content overlay */}
-          <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",justifyContent:"center",padding:isMobile?"12px 14px":"20px 28px",gap:isMobile?10:14}}>
+          <div style={{
+  position:isMobile?"relative":"absolute",
+  inset:isMobile?undefined:0,
+  display:"flex",
+  flexDirection:"column",
+  justifyContent:"center",
+  padding:isMobile?"18px 14px":"20px 28px",
+  gap:isMobile?10:14
+}}>
             <div style={{maxWidth:1240,width:"100%",margin:"0 auto"}}>
 
               {/* Title */}
@@ -1434,7 +1458,7 @@ export default function WeddingPlanner() {
                     <div style={{fontSize:9,color:"#6b7280",marginBottom:3}}>PAID BY</div>
                     <select value={newPayment.paidBy} onChange={e=>setNewPayment(p=>({...p,paidBy:e.target.value}))}
                       style={{background:"#f9f9fc",border:"1px solid #e5e7eb",color:AUTHOR_COLORS[newPayment.paidBy]||"#C9A96E",borderRadius:6,padding:"6px 10px",fontSize:12,fontFamily:"inherit",width:"100%",cursor:"pointer"}}>
-                      {["Ajay","Bianca","Kamal","Anit"].map(n=><option key={n} value={n} style={{background:"#f9f9fc",color:AUTHOR_COLORS[n]}}>{n}</option>)}
+                      {["Ajay Bains","Bianca Natt","Kamal Bains","Anit Natt"].map(n=><option key={n} value={n} style={{background:"#f9f9fc",color:AUTHOR_COLORS[n]}}>{n}</option>)}
                     </select>
                   </div>
                   <div>
