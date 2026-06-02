@@ -982,23 +982,55 @@ function fmtEUR(n) { return `€${Number(n||0).toLocaleString("en-US",{minimumFr
 function uid()     { return "u"+Math.random().toString(36).slice(2,9); }
 function eurToUsd(eur, rate) { return eur * rate; }
 
-// ── Synchronous localStorage save (immediate, no race conditions) ──
-function localSave(key: string, val: any) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
-  // Also try Claude artifact storage as backup (non-blocking)
+// ─────────────────────────────────────────────────────────────────────────────
+// STORAGE — Supabase as source of truth, localStorage as instant cache
+// All devices/users share the same Supabase table: wp_data (key, value, updated_at)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SB_HEADERS = {
+  "apikey": SUPABASE_KEY,
+  "Authorization": `Bearer ${SUPABASE_KEY}`,
+  "Content-Type": "application/json",
+  "Prefer": "resolution=merge-duplicates",
+};
+
+// Save: write to localStorage immediately (instant), then upsert to Supabase (shared)
+async function localSave(key: string, val: any) {
+  const serialized = JSON.stringify(val);
+  try { localStorage.setItem(key, serialized); } catch(e) {}
   try {
-    const s = (window as any).storage;
-    if (s?.set) s.set(key, JSON.stringify(val), true).catch(()=>{});
+    await fetch(`${SUPABASE_URL}/rest/v1/wp_data`, {
+      method: "POST",
+      headers: { ...SB_HEADERS, "Prefer": "resolution=merge-duplicates,return=minimal" },
+      body: JSON.stringify({ key, value: val, updated_at: new Date().toISOString() }),
+    });
   } catch(e) {}
 }
-function localLoad(key: string, fallback: any) {
+
+// Load: try Supabase first (freshest), fall back to localStorage, then fallback
+async function localLoad(key: string, fallback: any) {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/wp_data?key=eq.${key}&select=value`,
+      { headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` } }
+    );
+    if (res.ok) {
+      const rows = await res.json();
+      if (rows && rows.length > 0 && rows[0].value !== undefined) {
+        // Cache locally too
+        try { localStorage.setItem(key, JSON.stringify(rows[0].value)); } catch(e) {}
+        return rows[0].value;
+      }
+    }
+  } catch(e) {}
+  // Fall back to localStorage
   try {
     const v = localStorage.getItem(key);
     if (v) return JSON.parse(v);
   } catch(e) {}
   return fallback;
 }
-// Keep sharedSave/sharedLoad as aliases for compatibility
+
 function sharedSave(key: string, val: any) { localSave(key, val); }
 async function sharedLoad(key: string, fallback: any) { return localLoad(key, fallback); }
 
@@ -1061,26 +1093,40 @@ export default function WeddingPlanner() {
     setReady(true);
   },[]);
 
-  // ── Poll every 15s (for multi-user sync via Claude artifact storage) ──
+  // ── Poll Supabase every 8s for cross-device sync ──
   useEffect(()=>{
     if(!ready) return;
-    const iv = setInterval(()=>{
-      // Re-read from localStorage in case another tab/user updated
-      const n = localLoad("wp_notes", null);
-      const g = localLoad("wp_guests", null);
-      const k = localLoad("wp_kanban", null);
-      if(n) setNotes(n);
-      if(g) setGuests(g);
-      if(k) setKanban(k);
-    }, 15000);
+    const iv = setInterval(async()=>{
+      try {
+        // Fetch latest notes, guests, kanban, payments from Supabase
+        const keys = ["wp_notes","wp_guests","wp_kanban","wp_payments","wp_events","wp_budget","wp_vendors","wp_checklist","wp_eurrate"];
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/wp_data?key=in.(${keys.map(k=>`"${k}"`).join(",")})&select=key,value`,
+          { headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` } }
+        );
+        if(!res.ok) return;
+        const rows: any[] = await res.json();
+        const map: any = {};
+        rows.forEach(r=>{ map[r.key]=r.value; });
+        if(map["wp_notes"])    setNotes(map["wp_notes"]);
+        if(map["wp_guests"])   setGuests(map["wp_guests"]);
+        if(map["wp_kanban"])   setKanban(map["wp_kanban"]);
+        if(map["wp_payments"]) setPayments(map["wp_payments"]);
+        if(map["wp_events"])   setEvents(map["wp_events"]);
+        if(map["wp_budget"])   setBudget(map["wp_budget"]);
+        if(map["wp_vendors"])  setVendors(map["wp_vendors"]);
+        if(map["wp_checklist"])setChecklist(map["wp_checklist"]);
+        if(map["wp_eurrate"])  setEurRate(map["wp_eurrate"]);
+      } catch(e) {}
+    }, 8000);
     return()=>clearInterval(iv);
   },[ready]);
 
-  // ── Auto-save: immediate sync to localStorage on every change ──
+  // ── Auto-save: localStorage instantly + Supabase async on every change ──
   useEffect(()=>{
     if(!ready) return;
     if(firstRender.current){ firstRender.current=false; return; }
-    // Synchronous - happens instantly, survives any refresh
+    // localStorage is sync (instant), Supabase is async (shared across devices)
     localSave("wp_events",events);
     localSave("wp_budget",budget);
     localSave("wp_vendors",vendors);
@@ -1159,6 +1205,50 @@ export default function WeddingPlanner() {
   function deleteNote(id){
     setNotes(p=>{
       const updated = p.filter(n=>n.id!==id);
+      try { localStorage.setItem("wp_notes", JSON.stringify(updated)); } catch(e) {}
+      sharedSave("wp_notes", updated);
+      return updated;
+    });
+  }
+
+  function toggleReaction(noteId, emoji){
+    setNotes(p=>{
+      const updated = p.map(n=>{
+        if(n.id!==noteId) return n;
+        const reactions = n.reactions||{};
+        const users = reactions[emoji]||[];
+        const already = users.includes(userName);
+        const newUsers = already ? users.filter(u=>u!==userName) : [...users,userName];
+        const newReactions = {...reactions,[emoji]:newUsers};
+        if(newUsers.length===0) delete newReactions[emoji];
+        return {...n, reactions:newReactions};
+      });
+      try { localStorage.setItem("wp_notes", JSON.stringify(updated)); } catch(e) {}
+      sharedSave("wp_notes", updated);
+      return updated;
+    });
+  }
+
+  function addReply(noteId, text){
+    if(!text.trim()) return;
+    setNotes(p=>{
+      const updated = p.map(n=>{
+        if(n.id!==noteId) return n;
+        const replies = n.replies||[];
+        return {...n, replies:[...replies,{id:uid(),text:text.trim(),author:userName||"Anonymous",ts:new Date().toISOString()}]};
+      });
+      try { localStorage.setItem("wp_notes", JSON.stringify(updated)); } catch(e) {}
+      sharedSave("wp_notes", updated);
+      return updated;
+    });
+  }
+
+  function deleteReply(noteId, replyId){
+    setNotes(p=>{
+      const updated = p.map(n=>{
+        if(n.id!==noteId) return n;
+        return {...n, replies:(n.replies||[]).filter(r=>r.id!==replyId)};
+      });
       try { localStorage.setItem("wp_notes", JSON.stringify(updated)); } catch(e) {}
       sharedSave("wp_notes", updated);
       return updated;
@@ -1970,113 +2060,272 @@ export default function WeddingPlanner() {
 
         {/* ══ NOTES ══ */}
         {tab==="notes" && (
-          <div>
-            {/* ── Compose box ── */}
-            <div style={{background:"#ffffff",border:"1px solid #e4e4ef",borderRadius:20,padding:"20px 22px",marginBottom:24,boxShadow:"0 2px 12px rgba(79,70,229,0.06)"}}>
-              <div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:14}}>
-                <div style={{width:38,height:38,borderRadius:12,background:AUTHOR_COLORS[userName]||"#4F46E5",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:800,color:"#fff",flexShrink:0,boxShadow:`0 4px 12px ${AUTHOR_COLORS[userName]||"#4F46E5"}55`}}>
-                  {(userName||"?")[0]}
-                </div>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:12,fontWeight:700,color:"#0f0f1a",marginBottom:6}}>{userName}</div>
-                  <textarea
-                    value={newNote}
-                    onChange={e=>{
-                      setNewNote(e.target.value);
-                      // Auto-grow
-                      e.target.style.height="auto";
-                      e.target.style.height=Math.max(72,e.target.scrollHeight)+"px";
-                    }}
-                    onKeyDown={e=>{ if((e.metaKey||e.ctrlKey)&&e.key==="Enter") addNote(); }}
-                    placeholder="Share an update, decision, or question with the group… (Cmd+Enter to post)"
-                    rows={3}
-                    style={{width:"100%",background:"#f9f9fc",border:"1px solid #e4e4ef",borderRadius:12,padding:"12px 14px",fontSize:13,color:"#0f0f1a",fontFamily:"'Plus Jakarta Sans',sans-serif",outline:"none",resize:"none",lineHeight:1.6,boxSizing:"border-box",transition:"border-color 0.15s",overflow:"hidden",minHeight:72}}
-                    onFocus={e=>e.target.style.borderColor="rgba(79,70,229,0.4)"}
-                    onBlur={e=>e.target.style.borderColor="#e4e4ef"}
-                  />
-                </div>
-              </div>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div style={{fontSize:11,color:"#8888aa"}}>
-                  {notes.length} {notes.length===1?"note":"notes"} · visible to all
-                </div>
-                <button onClick={addNote}
-                  style={{background:"linear-gradient(135deg,#4F46E5,#7C3AED)",color:"#fff",border:"none",borderRadius:10,padding:"9px 22px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:700,boxShadow:"0 4px 14px rgba(79,70,229,0.3)",opacity:newNote.trim()?"1":"0.5",transition:"opacity 0.15s,transform 0.1s"}}
-                  onMouseEnter={e=>e.currentTarget.style.transform="translateY(-1px)"}
-                  onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}
-                >
-                  Post note →
-                </button>
-              </div>
-            </div>
-
-            {/* ── Notes feed ── */}
-            {notes.length===0 ? (
-              <div style={{textAlign:"center",padding:"60px 20px",color:"#8888aa",background:"#ffffff",borderRadius:20,border:"1px dashed #e4e4ef"}}>
-                <div style={{fontSize:32,marginBottom:12}}>✍️</div>
-                <div style={{fontSize:15,fontWeight:600,color:"#4a4a6a",marginBottom:6}}>No notes yet</div>
-                <div style={{fontSize:13}}>Be the first to share an update with the group.</div>
-              </div>
-            ) : (
-              <div style={{display:"flex",flexDirection:"column",gap:14}}>
-                {notes.map((n,idx)=>{
-                  const col = AUTHOR_COLORS[n.author]||"#4F46E5";
-                  const isMe = n.author===userName;
-                  const dt = new Date(n.ts);
-                  const now = new Date();
-                  const diffMs = now.getTime()-dt.getTime();
-                  const diffMin = Math.floor(diffMs/60000);
-                  const diffHr = Math.floor(diffMin/60);
-                  const diffDay = Math.floor(diffHr/24);
-                  const timeAgo = diffMin<1?"just now":diffMin<60?`${diffMin}m ago`:diffHr<24?`${diffHr}h ago`:diffDay===1?"yesterday":`${diffDay}d ago`;
-                  return(
-                    <div key={n.id} className="note-card fade-up" style={{animationDelay:`${idx*0.04}s`,position:"relative",overflow:"hidden"}}>
-                      {/* Color accent bar at top */}
-                      <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:`linear-gradient(90deg,${col},${col}88)`,borderRadius:"16px 16px 0 0"}}/>
-                      <div style={{paddingTop:6}}>
-                        {/* Header */}
-                        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
-                          <div style={{width:36,height:36,borderRadius:11,background:`linear-gradient(135deg,${col},${col}cc)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:800,color:"#fff",flexShrink:0,boxShadow:`0 4px 10px ${col}44`}}>
-                            {(n.author||"?")[0]}
-                          </div>
-                          <div style={{flex:1}}>
-                            <div style={{fontSize:13,fontWeight:700,color:"#0f0f1a",letterSpacing:-0.2}}>{n.author}</div>
-                            <div style={{fontSize:11,color:"#8888aa",fontWeight:500,marginTop:1}}>
-                              {timeAgo} · {dt.toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}
-                            </div>
-                          </div>
-                          {isMe && (
-                            <button onClick={()=>deleteNote(n.id)}
-                              style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:8,color:"#ef4444",cursor:"pointer",fontSize:11,fontWeight:600,padding:"4px 10px",transition:"all 0.15s"}}
-                              onMouseEnter={e=>{ e.currentTarget.style.background="#fee2e2"; }}
-                              onMouseLeave={e=>{ e.currentTarget.style.background="#fef2f2"; }}
-                            >Delete</button>
-                          )}
-                        </div>
-                        {/* Body */}
-                        <div style={{fontSize:14,color:"#1a1a2e",lineHeight:1.7,whiteSpace:"pre-wrap",fontWeight:400,wordBreak:"break-word"}}>
-                          {n.text}
-                        </div>
-                        {/* Footer tag */}
-                        {isMe && (
-                          <div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:4,background:col+"11",border:`1px solid ${col}22`,borderRadius:99,padding:"2px 10px"}}>
-                            <div style={{width:5,height:5,borderRadius:"50%",background:col}}/>
-                            <span style={{fontSize:10,fontWeight:600,color:col}}>You</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          <NotesTab
+            notes={notes}
+            userName={userName}
+            newNote={newNote}
+            setNewNote={setNewNote}
+            addNote={addNote}
+            deleteNote={deleteNote}
+            toggleReaction={toggleReaction}
+            addReply={addReply}
+            deleteReply={deleteReply}
+            isMobile={isMobile}
+          />
         )}
 
         {/* ══ GMAIL ══ */}
         {tab==="gmail" && <GmailTab vendors={vendors}/>}
 
       </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NOTES TAB COMPONENT
+// ─────────────────────────────────────────────────────────────────────────────
+const REACTIONS = ["❤️","🔥","👏","😍","✅","😂","🤔","💍"];
+
+function NoteCard({n, userName, deleteNote, toggleReaction, addReply, deleteReply, isMobile}: any){
+  const [showReplyBox, setShowReplyBox] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [showReactionPicker, setShowReactionPicker] = useState(false);
+  const [showReplies, setShowReplies] = useState(true);
+
+  const col = AUTHOR_COLORS[n.author]||"#4F46E5";
+  const isMe = n.author===userName;
+  const dt = new Date(n.ts);
+  const now = new Date();
+  const diffMs = now.getTime()-dt.getTime();
+  const diffMin = Math.floor(diffMs/60000);
+  const diffHr = Math.floor(diffMin/60);
+  const diffDay = Math.floor(diffHr/24);
+  const timeAgo = diffMin<1?"just now":diffMin<60?`${diffMin}m ago`:diffHr<24?`${diffHr}h ago`:diffDay===1?"yesterday":`${diffDay}d ago`;
+
+  const reactions = n.reactions||{};
+  const replies = n.replies||[];
+  const totalReactions = Object.values(reactions).reduce((s:any,users:any)=>s+users.length,0);
+
+  function submitReply(){
+    if(!replyText.trim()) return;
+    addReply(n.id, replyText);
+    setReplyText("");
+    setShowReplyBox(false);
+    setShowReplies(true);
+  }
+
+  return(
+    <div style={{background:"#ffffff",border:"1px solid #e4e4ef",borderRadius:20,boxShadow:"0 2px 12px rgba(79,70,229,0.05)",overflow:"hidden",transition:"box-shadow 0.2s"}}>
+
+      {/* ── Color bar ── */}
+      <div style={{height:3,background:`linear-gradient(90deg,${col},${col}66)`}}/>
+
+      <div style={{padding:isMobile?"14px 14px 0":"18px 20px 0"}}>
+        {/* ── Header ── */}
+        <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:12}}>
+          <div style={{width:38,height:38,borderRadius:12,background:`linear-gradient(135deg,${col},${col}bb)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:800,color:"#fff",flexShrink:0,boxShadow:`0 4px 10px ${col}33`}}>
+            {(n.author||"?")[0]}
+          </div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+              <span style={{fontSize:13,fontWeight:700,color:"#0f0f1a"}}>{n.author}</span>
+              {isMe&&<span style={{fontSize:10,fontWeight:600,color:col,background:col+"15",border:`1px solid ${col}30`,borderRadius:99,padding:"1px 8px"}}>You</span>}
+            </div>
+            <div style={{fontSize:11,color:"#8888aa",marginTop:1}}>{timeAgo} · {dt.toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</div>
+          </div>
+          {isMe&&(
+            <button onClick={()=>deleteNote(n.id)}
+              style={{background:"transparent",border:"none",color:"#d1d5db",cursor:"pointer",fontSize:18,lineHeight:1,padding:"0 2px",flexShrink:0}}
+              onMouseEnter={e=>e.currentTarget.style.color="#ef4444"}
+              onMouseLeave={e=>e.currentTarget.style.color="#d1d5db"}
+            >×</button>
+          )}
+        </div>
+
+        {/* ── Body — auto-height ── */}
+        <div style={{fontSize:isMobile?13:14,color:"#1a1a2e",lineHeight:1.75,whiteSpace:"pre-wrap",wordBreak:"break-word",marginBottom:14}}>
+          {n.text}
+        </div>
+
+        {/* ── Existing reactions ── */}
+        {Object.keys(reactions).length>0&&(
+          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
+            {Object.entries(reactions).map(([emoji,users]:any)=>{
+              const iReacted = users.includes(userName);
+              return(
+                <button key={emoji} onClick={()=>toggleReaction(n.id,emoji)}
+                  style={{display:"flex",alignItems:"center",gap:4,background:iReacted?"rgba(79,70,229,0.08)":"#f4f4f8",border:iReacted?"1.5px solid rgba(79,70,229,0.3)":"1.5px solid #e4e4ef",borderRadius:99,padding:"4px 10px",cursor:"pointer",fontSize:13,fontWeight:iReacted?700:400,color:iReacted?"#4F46E5":"#4a4a6a",transition:"all 0.15s"}}>
+                  {emoji}
+                  <span style={{fontSize:11,fontWeight:700}}>{users.length}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ── Action bar ── */}
+      <div style={{padding:isMobile?"8px 14px":"8px 20px",borderTop:"1px solid #f4f4f8",display:"flex",alignItems:"center",gap:4,position:"relative"}}>
+
+        {/* React button */}
+        <div style={{position:"relative"}}>
+          <button onClick={()=>setShowReactionPicker(p=>!p)}
+            style={{display:"flex",alignItems:"center",gap:5,background:"transparent",border:"none",borderRadius:8,padding:"5px 10px",cursor:"pointer",fontSize:12,fontWeight:500,color:"#8888aa",transition:"all 0.15s"}}
+            onMouseEnter={e=>{e.currentTarget.style.background="#f4f4f8";e.currentTarget.style.color="#4a4a6a";}}
+            onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="#8888aa";}}>
+            <span style={{fontSize:15}}>😊</span> React
+          </button>
+          {showReactionPicker&&(
+            <div style={{position:"absolute",bottom:"calc(100% + 6px)",left:0,background:"#fff",border:"1px solid #e4e4ef",borderRadius:14,padding:"8px 10px",display:"flex",gap:4,boxShadow:"0 8px 28px rgba(0,0,0,0.12)",zIndex:50,flexWrap:"wrap",maxWidth:220}}>
+              {REACTIONS.map(emoji=>(
+                <button key={emoji} onClick={()=>{toggleReaction(n.id,emoji);setShowReactionPicker(false);}}
+                  style={{background:"transparent",border:"none",fontSize:20,cursor:"pointer",borderRadius:8,padding:"4px 6px",transition:"transform 0.1s"}}
+                  onMouseEnter={e=>e.currentTarget.style.transform="scale(1.3)"}
+                  onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}
+                >{emoji}</button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Reply button */}
+        <button onClick={()=>{setShowReplyBox(p=>!p);setShowReactionPicker(false);}}
+          style={{display:"flex",alignItems:"center",gap:5,background:"transparent",border:"none",borderRadius:8,padding:"5px 10px",cursor:"pointer",fontSize:12,fontWeight:500,color:showReplyBox?"#4F46E5":"#8888aa",transition:"all 0.15s"}}
+          onMouseEnter={e=>{e.currentTarget.style.background="#f4f4f8";e.currentTarget.style.color="#4a4a6a";}}
+          onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color=showReplyBox?"#4F46E5":"#8888aa";}}>
+          <span style={{fontSize:14}}>↩️</span> Reply
+        </button>
+
+        {/* Replies count toggle */}
+        {replies.length>0&&(
+          <button onClick={()=>setShowReplies(p=>!p)}
+            style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:5,background:"transparent",border:"none",borderRadius:8,padding:"5px 10px",cursor:"pointer",fontSize:11,fontWeight:600,color:"#4F46E5",transition:"all 0.15s"}}>
+            {showReplies?"▲":"▼"} {replies.length} {replies.length===1?"reply":"replies"}
+          </button>
+        )}
+      </div>
+
+      {/* ── Replies ── */}
+      {showReplies&&replies.length>0&&(
+        <div style={{background:"#f9f9fc",borderTop:"1px solid #f0f0f8",padding:isMobile?"10px 14px":"12px 20px",display:"flex",flexDirection:"column",gap:10}}>
+          {replies.map(r=>{
+            const rc = AUTHOR_COLORS[r.author]||"#4F46E5";
+            const rdt = new Date(r.ts);
+            const rdiffMs = now.getTime()-rdt.getTime();
+            const rdiffMin = Math.floor(rdiffMs/60000);
+            const rdiffHr = Math.floor(rdiffMin/60);
+            const rdiffDay = Math.floor(rdiffHr/24);
+            const rTimeAgo = rdiffMin<1?"just now":rdiffMin<60?`${rdiffMin}m ago`:rdiffHr<24?`${rdiffHr}h ago`:rdiffDay===1?"yesterday":`${rdiffDay}d ago`;
+            return(
+              <div key={r.id} style={{display:"flex",gap:8,alignItems:"flex-start"}}>
+                <div style={{width:28,height:28,borderRadius:9,background:`linear-gradient(135deg,${rc},${rc}bb)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:"#fff",flexShrink:0}}>
+                  {(r.author||"?")[0]}
+                </div>
+                <div style={{flex:1,background:"#ffffff",border:"1px solid #e4e4ef",borderRadius:12,padding:"8px 12px"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+                    <span style={{fontSize:12,fontWeight:700,color:"#0f0f1a"}}>{r.author}</span>
+                    <span style={{fontSize:10,color:"#8888aa"}}>{rTimeAgo}</span>
+                    {r.author===userName&&(
+                      <button onClick={()=>deleteReply(n.id,r.id)}
+                        style={{marginLeft:"auto",background:"transparent",border:"none",color:"#d1d5db",cursor:"pointer",fontSize:14,padding:0,lineHeight:1}}
+                        onMouseEnter={e=>e.currentTarget.style.color="#ef4444"}
+                        onMouseLeave={e=>e.currentTarget.style.color="#d1d5db"}
+                      >×</button>
+                    )}
+                  </div>
+                  <div style={{fontSize:13,color:"#1a1a2e",lineHeight:1.6,whiteSpace:"pre-wrap",wordBreak:"break-word"}}>{r.text}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── Reply composer ── */}
+      {showReplyBox&&(
+        <div style={{borderTop:"1px solid #e4e4ef",padding:isMobile?"10px 14px":"12px 20px",display:"flex",gap:8,alignItems:"flex-start"}}>
+          <div style={{width:30,height:30,borderRadius:9,background:AUTHOR_COLORS[userName]||"#4F46E5",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#fff",flexShrink:0}}>
+            {(userName||"?")[0]}
+          </div>
+          <div style={{flex:1}}>
+            <textarea
+              autoFocus
+              value={replyText}
+              onChange={e=>{setReplyText(e.target.value);e.target.style.height="auto";e.target.style.height=Math.max(44,e.target.scrollHeight)+"px";}}
+              onKeyDown={e=>{if((e.metaKey||e.ctrlKey)&&e.key==="Enter") submitReply();if(e.key==="Escape"){setShowReplyBox(false);setReplyText("");}}}
+              placeholder={`Reply as ${userName}… (Cmd+Enter to post)`}
+              rows={2}
+              style={{width:"100%",background:"#f9f9fc",border:"1px solid #e4e4ef",borderRadius:10,padding:"8px 12px",fontSize:13,color:"#0f0f1a",fontFamily:"'Plus Jakarta Sans',sans-serif",outline:"none",resize:"none",lineHeight:1.5,boxSizing:"border-box",overflow:"hidden",minHeight:44}}
+              onFocus={e=>e.target.style.borderColor="rgba(79,70,229,0.4)"}
+              onBlur={e=>e.target.style.borderColor="#e4e4ef"}
+            />
+            <div style={{display:"flex",gap:6,marginTop:6,justifyContent:"flex-end"}}>
+              <button onClick={()=>{setShowReplyBox(false);setReplyText("");}}
+                style={{background:"transparent",border:"1px solid #e4e4ef",borderRadius:8,padding:"5px 12px",cursor:"pointer",fontSize:12,color:"#8888aa",fontFamily:"inherit"}}>
+                Cancel
+              </button>
+              <button onClick={submitReply}
+                style={{background:"linear-gradient(135deg,#4F46E5,#7C3AED)",color:"#fff",border:"none",borderRadius:8,padding:"5px 14px",cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"inherit",boxShadow:"0 4px 12px rgba(79,70,229,0.3)",opacity:replyText.trim()?"1":"0.5"}}>
+                Reply →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NotesTab({notes,userName,newNote,setNewNote,addNote,deleteNote,toggleReaction,addReply,deleteReply,isMobile}: any){
+  const accentCol = AUTHOR_COLORS[userName]||"#4F46E5";
+  return(
+    <div>
+      {/* ── Compose box ── */}
+      <div style={{background:"#ffffff",border:"1px solid #e4e4ef",borderRadius:20,padding:isMobile?"14px":"20px 22px",marginBottom:20,boxShadow:"0 2px 16px rgba(79,70,229,0.07)"}}>
+        <div style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:12}}>
+          <div style={{width:38,height:38,borderRadius:12,background:accentCol,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:800,color:"#fff",flexShrink:0,boxShadow:`0 4px 12px ${accentCol}44`}}>
+            {(userName||"?")[0]}
+          </div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:11,fontWeight:700,color:"#0f0f1a",marginBottom:6,letterSpacing:-0.1}}>{userName}</div>
+            <textarea
+              value={newNote}
+              onChange={e=>{setNewNote(e.target.value);e.target.style.height="auto";e.target.style.height=Math.max(72,e.target.scrollHeight)+"px";}}
+              onKeyDown={e=>{ if((e.metaKey||e.ctrlKey)&&e.key==="Enter") addNote(); }}
+              placeholder="Share an update, decision, or question with the group… (Cmd+Enter to post)"
+              rows={3}
+              style={{width:"100%",background:"#f9f9fc",border:"1px solid #e4e4ef",borderRadius:12,padding:"11px 14px",fontSize:13,color:"#0f0f1a",fontFamily:"'Plus Jakarta Sans',sans-serif",outline:"none",resize:"none",lineHeight:1.6,boxSizing:"border-box",overflow:"hidden",minHeight:72,transition:"border-color 0.15s"}}
+              onFocus={e=>e.target.style.borderColor="rgba(79,70,229,0.4)"}
+              onBlur={e=>e.target.style.borderColor="#e4e4ef"}
+            />
+          </div>
+        </div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingLeft:48}}>
+          <span style={{fontSize:11,color:"#8888aa"}}>{notes.length} {notes.length===1?"note":"notes"} · shared with everyone</span>
+          <button onClick={addNote}
+            style={{background:"linear-gradient(135deg,#4F46E5,#7C3AED)",color:"#fff",border:"none",borderRadius:10,padding:"8px 20px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:700,boxShadow:"0 4px 14px rgba(79,70,229,0.3)",opacity:newNote.trim()?"1":"0.45",transition:"opacity 0.15s,transform 0.1s"}}
+            onMouseEnter={e=>e.currentTarget.style.transform="translateY(-1px)"}
+            onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}
+          >Post →</button>
+        </div>
+      </div>
+
+      {/* ── Feed ── */}
+      {notes.length===0?(
+        <div style={{textAlign:"center",padding:"60px 20px",background:"#fff",borderRadius:20,border:"1px dashed #e4e4ef"}}>
+          <div style={{fontSize:36,marginBottom:10}}>✍️</div>
+          <div style={{fontSize:15,fontWeight:700,color:"#4a4a6a",marginBottom:4}}>No notes yet</div>
+          <div style={{fontSize:13,color:"#8888aa"}}>Be the first to share an update with the group.</div>
+        </div>
+      ):(
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          {notes.map((n: any,idx: number)=>(
+            <NoteCard key={n.id} n={n} userName={userName} deleteNote={deleteNote}
+              toggleReaction={toggleReaction} addReply={addReply} deleteReply={deleteReply} isMobile={isMobile}/>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
