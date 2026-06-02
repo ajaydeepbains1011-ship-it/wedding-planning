@@ -1007,26 +1007,38 @@ async function localSave(key: string, val: any) {
   } catch(e) {}
 }
 
-// Load: try Supabase first (freshest), fall back to localStorage, then fallback
+// Load: try Supabase first, fall back to localStorage, then fallback
+// Validates returned value matches expected type to prevent crashes
 async function localLoad(key: string, fallback: any) {
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/wp_data?key=eq.${key}&select=value`,
-      { headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` } }
+      `${SUPABASE_URL}/rest/v1/wp_data?key=eq.${encodeURIComponent(key)}&select=value`,
+      { headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }, signal: AbortSignal.timeout(5000) }
     );
     if (res.ok) {
       const rows = await res.json();
-      if (rows && rows.length > 0 && rows[0].value !== undefined) {
-        // Cache locally too
-        try { localStorage.setItem(key, JSON.stringify(rows[0].value)); } catch(e) {}
-        return rows[0].value;
+      if (Array.isArray(rows) && rows.length > 0 && rows[0]?.value !== undefined) {
+        const val = rows[0].value;
+        // Validate the type matches fallback to avoid crashes
+        const expectedType = Array.isArray(fallback) ? "array" : typeof fallback;
+        const actualType = Array.isArray(val) ? "array" : typeof val;
+        if (expectedType === actualType) {
+          try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
+          return val;
+        }
       }
     }
   } catch(e) {}
   // Fall back to localStorage
   try {
     const v = localStorage.getItem(key);
-    if (v) return JSON.parse(v);
+    if (v) {
+      const parsed = JSON.parse(v);
+      // Same type check
+      const expectedType = Array.isArray(fallback) ? "array" : typeof fallback;
+      const actualType = Array.isArray(parsed) ? "array" : typeof parsed;
+      if (expectedType === actualType) return parsed;
+    }
   } catch(e) {}
   return fallback;
 }
@@ -1077,20 +1089,38 @@ export default function WeddingPlanner() {
   const firstRender = useRef(true);
   const syncTimer   = useRef(null);
 
-  // ── Load (synchronous - no race conditions) ──
+  // ── Load: async from Supabase, sync fallback to localStorage ──
   useEffect(()=>{
     const storedName = localStorage.getItem("wp_username")||"";
     setUserName(storedName);
-    setEvents(localLoad("wp_events",   DEFAULT_EVENTS));
-    setBudget(localLoad("wp_budget",   DEFAULT_BUDGET));
-    setVendors(localLoad("wp_vendors", DEFAULT_VENDORS));
-    setPayments(localLoad("wp_payments",DEFAULT_PAYMENTS));
-    setKanban(localLoad("wp_kanban",   DEFAULT_KANBAN));
-    setChecklist(localLoad("wp_checklist",DEFAULT_CHECKLIST));
-    setGuests(localLoad("wp_guests",   []));
-    setNotes(localLoad("wp_notes",     []));
-    setEurRate(localLoad("wp_eurrate", DEFAULT_EUR_RATE));
-    setReady(true);
+    // Load from Supabase (async) - shows defaults immediately, updates when loaded
+    (async()=>{
+      try {
+        const [ev,b,v,py,k,c,g,n,r] = await Promise.all([
+          localLoad("wp_events",    DEFAULT_EVENTS),
+          localLoad("wp_budget",    DEFAULT_BUDGET),
+          localLoad("wp_vendors",   DEFAULT_VENDORS),
+          localLoad("wp_payments",  DEFAULT_PAYMENTS),
+          localLoad("wp_kanban",    DEFAULT_KANBAN),
+          localLoad("wp_checklist", DEFAULT_CHECKLIST),
+          localLoad("wp_guests",    []),
+          localLoad("wp_notes",     []),
+          localLoad("wp_eurrate",   DEFAULT_EUR_RATE),
+        ]);
+        if(Array.isArray(ev))    setEvents(ev);
+        if(b && typeof b==="object" && !Array.isArray(b)) setBudget(b);
+        if(Array.isArray(v))     setVendors(v);
+        if(Array.isArray(py))    setPayments(py);
+        if(k && typeof k==="object" && !Array.isArray(k)) setKanban(k);
+        if(Array.isArray(c))     setChecklist(c);
+        if(Array.isArray(g))     setGuests(g);
+        if(Array.isArray(n))     setNotes(n);
+        if(typeof r==="number")  setEurRate(r);
+      } catch(e) {
+        console.error("Load failed, using defaults", e);
+      }
+      setReady(true);
+    })();
   },[]);
 
   // ── Poll Supabase every 8s for cross-device sync ──
@@ -1108,15 +1138,16 @@ export default function WeddingPlanner() {
         const rows: any[] = await res.json();
         const map: any = {};
         rows.forEach(r=>{ map[r.key]=r.value; });
-        if(map["wp_notes"])    setNotes(map["wp_notes"]);
-        if(map["wp_guests"])   setGuests(map["wp_guests"]);
-        if(map["wp_kanban"])   setKanban(map["wp_kanban"]);
-        if(map["wp_payments"]) setPayments(map["wp_payments"]);
-        if(map["wp_events"])   setEvents(map["wp_events"]);
-        if(map["wp_budget"])   setBudget(map["wp_budget"]);
-        if(map["wp_vendors"])  setVendors(map["wp_vendors"]);
-        if(map["wp_checklist"])setChecklist(map["wp_checklist"]);
-        if(map["wp_eurrate"])  setEurRate(map["wp_eurrate"]);
+        // Validate arrays are arrays, objects are objects before setting state
+        if(Array.isArray(map["wp_notes"]))     setNotes(map["wp_notes"]);
+        if(Array.isArray(map["wp_guests"]))    setGuests(map["wp_guests"]);
+        if(map["wp_kanban"] && typeof map["wp_kanban"]==="object" && !Array.isArray(map["wp_kanban"])) setKanban(map["wp_kanban"]);
+        if(Array.isArray(map["wp_payments"]))  setPayments(map["wp_payments"]);
+        if(Array.isArray(map["wp_events"]))    setEvents(map["wp_events"]);
+        if(map["wp_budget"] && typeof map["wp_budget"]==="object" && !Array.isArray(map["wp_budget"])) setBudget(map["wp_budget"]);
+        if(Array.isArray(map["wp_vendors"]))   setVendors(map["wp_vendors"]);
+        if(Array.isArray(map["wp_checklist"])) setChecklist(map["wp_checklist"]);
+        if(typeof map["wp_eurrate"]==="number") setEurRate(map["wp_eurrate"]);
       } catch(e) {}
     }, 8000);
     return()=>clearInterval(iv);
