@@ -1152,16 +1152,24 @@ export default function WeddingPlanner() {
   // ── Notes ──
   function addNote(){
     const text = newNote.trim();
-    if(!text)return;
-    const note = {id:uid(),text,author:userName||"Anonymous",ts:new Date().toISOString()};
+    if(!text) return;
+    const note = {id:uid(), text, author:userName||"Anonymous", ts:new Date().toISOString()};
     setNotes(p=>{
-      const updated=[note,...p];
-      sharedSave("wp_notes",updated);
+      const updated = [note, ...p];
+      try { localStorage.setItem("wp_notes", JSON.stringify(updated)); } catch(e) {}
+      sharedSave("wp_notes", updated);
       return updated;
     });
     setNewNote("");
   }
-  function deleteNote(id){setNotes(p=>{const updated=p.filter(n=>n.id!==id);sharedSave("wp_notes",updated);return updated;});}
+  function deleteNote(id){
+    setNotes(p=>{
+      const updated = p.filter(n=>n.id!==id);
+      try { localStorage.setItem("wp_notes", JSON.stringify(updated)); } catch(e) {}
+      sharedSave("wp_notes", updated);
+      return updated;
+    });
+  }
 
   // ── Derived ──
   const totalBudgetAll  = Object.values(budget).reduce((s,e)=>s+e.total,0);
@@ -1969,31 +1977,95 @@ export default function WeddingPlanner() {
         {/* ══ NOTES ══ */}
         {tab==="notes" && (
           <div>
-            <div style={{marginBottom:16}}>
-              <div style={{fontSize:11,color:"#6b7280",marginBottom:10}}>Shared updates, decisions, and questions for the whole group.</div>
-              <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
-                <textarea value={newNote} onChange={e=>setNewNote(e.target.value)} onKeyDown={e=>{ if((e.metaKey||e.ctrlKey)&&e.key==="Enter") addNote(); }} placeholder={`Write a note as ${userName || "Anonymous"}…`} rows={3}
-                  style={{...inp(),flex:1,background:"#f9f9fc",border:"1px solid #e5e7eb",borderRadius:10,padding:"10px 14px",fontSize:13,resize:"vertical",lineHeight:1.5}}/>
-                <button onClick={addNote} style={{background:"linear-gradient(135deg,#4F46E5,#7C3AED)",color:"#ffffff",border:"none",borderRadius:10,padding:"10px 18px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:800,whiteSpace:"nowrap",boxShadow:"0 6px 18px rgba(79,70,229,0.25)"}}>Post</button>
+            {/* ── Compose box ── */}
+            <div style={{background:"#ffffff",border:"1px solid #e4e4ef",borderRadius:20,padding:"20px 22px",marginBottom:24,boxShadow:"0 2px 12px rgba(79,70,229,0.06)"}}>
+              <div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:14}}>
+                <div style={{width:38,height:38,borderRadius:12,background:AUTHOR_COLORS[userName]||"#4F46E5",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:800,color:"#fff",flexShrink:0,boxShadow:`0 4px 12px ${AUTHOR_COLORS[userName]||"#4F46E5"}55`}}>
+                  {(userName||"?")[0]}
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:12,fontWeight:700,color:"#0f0f1a",marginBottom:6}}>{userName}</div>
+                  <textarea
+                    value={newNote}
+                    onChange={e=>setNewNote(e.target.value)}
+                    onKeyDown={e=>{ if((e.metaKey||e.ctrlKey)&&e.key==="Enter") addNote(); }}
+                    placeholder="Share an update, decision, or question with the group… (Cmd+Enter to post)"
+                    rows={3}
+                    style={{width:"100%",background:"#f9f9fc",border:"1px solid #e4e4ef",borderRadius:12,padding:"12px 14px",fontSize:13,color:"#0f0f1a",fontFamily:"'Plus Jakarta Sans',sans-serif",outline:"none",resize:"vertical",lineHeight:1.6,boxSizing:"border-box",transition:"border-color 0.15s"}}
+                    onFocus={e=>e.target.style.borderColor="rgba(79,70,229,0.4)"}
+                    onBlur={e=>e.target.style.borderColor="#e4e4ef"}
+                  />
+                </div>
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div style={{fontSize:11,color:"#8888aa"}}>
+                  {notes.length} {notes.length===1?"note":"notes"} · visible to all
+                </div>
+                <button onClick={addNote}
+                  style={{background:"linear-gradient(135deg,#4F46E5,#7C3AED)",color:"#fff",border:"none",borderRadius:10,padding:"9px 22px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:700,boxShadow:"0 4px 14px rgba(79,70,229,0.3)",opacity:newNote.trim()?"1":"0.5",transition:"opacity 0.15s,transform 0.1s"}}
+                  onMouseEnter={e=>e.currentTarget.style.transform="translateY(-1px)"}
+                  onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}
+                >
+                  Post note →
+                </button>
               </div>
             </div>
-            {notes.length===0?(
-              <div style={{textAlign:"center",padding:"40px",color:"#d1d5db",fontSize:13}}>No notes yet.</div>
-            ):(
-              <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                {notes.map(n=>{
-                  const col=AUTHOR_COLORS[n.author]||"#4F46E5";
+
+            {/* ── Notes feed ── */}
+            {notes.length===0 ? (
+              <div style={{textAlign:"center",padding:"60px 20px",color:"#8888aa"}}>
+                <div style={{fontSize:32,marginBottom:12}}>✍️</div>
+                <div style={{fontSize:15,fontWeight:600,color:"#4a4a6a",marginBottom:6}}>No notes yet</div>
+                <div style={{fontSize:13}}>Be the first to share an update with the group.</div>
+              </div>
+            ) : (
+              <div style={{display:"flex",flexDirection:"column",gap:14}}>
+                {notes.map((n,idx)=>{
+                  const col = AUTHOR_COLORS[n.author]||"#4F46E5";
+                  const isMe = n.author===userName;
+                  const dt = new Date(n.ts);
+                  const now = new Date();
+                  const diffMs = now.getTime()-dt.getTime();
+                  const diffMin = Math.floor(diffMs/60000);
+                  const diffHr = Math.floor(diffMin/60);
+                  const diffDay = Math.floor(diffHr/24);
+                  const timeAgo = diffMin<1?"just now":diffMin<60?`${diffMin}m ago`:diffHr<24?`${diffHr}h ago`:diffDay===1?"yesterday":`${diffDay}d ago`;
                   return(
-                    <div key={n.id} style={{background:"#ffffff",border:`1px solid ${col}33`,borderLeft:`3px solid ${col}`,borderRadius:10,padding:"14px 16px",position:"relative"}}>
-                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-                        <div style={{width:26,height:26,borderRadius:"50%",background:col,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#fff",flexShrink:0}}>{(n.author||"?")[0]}</div>
-                        <div>
-                          <div style={{fontSize:12,fontWeight:700,color:col}}>{n.author}</div>
-                          <div style={{fontSize:9,color:"#6b7280"}}>{new Date(n.ts).toLocaleString("en-GB",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}</div>
+                    <div key={n.id} className="note-card fade-up" style={{animationDelay:`${idx*0.04}s`,position:"relative",overflow:"hidden"}}>
+                      {/* Color accent bar at top */}
+                      <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:`linear-gradient(90deg,${col},${col}88)`,borderRadius:"16px 16px 0 0"}}/>
+                      <div style={{paddingTop:6}}>
+                        {/* Header */}
+                        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+                          <div style={{width:36,height:36,borderRadius:11,background:`linear-gradient(135deg,${col},${col}cc)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:800,color:"#fff",flexShrink:0,boxShadow:`0 4px 10px ${col}44`}}>
+                            {(n.author||"?")[0]}
+                          </div>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:13,fontWeight:700,color:"#0f0f1a",letterSpacing:-0.2}}>{n.author}</div>
+                            <div style={{fontSize:11,color:"#8888aa",fontWeight:500,marginTop:1}}>
+                              {timeAgo} · {dt.toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}
+                            </div>
+                          </div>
+                          {isMe && (
+                            <button onClick={()=>deleteNote(n.id)}
+                              style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:8,color:"#ef4444",cursor:"pointer",fontSize:11,fontWeight:600,padding:"4px 10px",transition:"all 0.15s"}}
+                              onMouseEnter={e=>{ e.currentTarget.style.background="#fee2e2"; }}
+                              onMouseLeave={e=>{ e.currentTarget.style.background="#fef2f2"; }}
+                            >Delete</button>
+                          )}
                         </div>
+                        {/* Body */}
+                        <div style={{fontSize:14,color:"#1a1a2e",lineHeight:1.7,whiteSpace:"pre-wrap",fontWeight:400}}>
+                          {n.text}
+                        </div>
+                        {/* Footer tag */}
+                        {isMe && (
+                          <div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:4,background:col+"11",border:`1px solid ${col}22`,borderRadius:99,padding:"2px 10px"}}>
+                            <div style={{width:5,height:5,borderRadius:"50%",background:col}}/>
+                            <span style={{fontSize:10,fontWeight:600,color:col}}>You</span>
+                          </div>
+                        )}
                       </div>
-                      <div style={{fontSize:13,color:"#374151",lineHeight:1.6,whiteSpace:"pre-wrap"}}>{n.text}</div>
-                      {n.author===userName&&<button onClick={()=>deleteNote(n.id)} style={{position:"absolute",top:10,right:12,background:"none",border:"none",color:"#d1d5db",cursor:"pointer",fontSize:14,padding:0}}>×</button>}
                     </div>
                   );
                 })}
