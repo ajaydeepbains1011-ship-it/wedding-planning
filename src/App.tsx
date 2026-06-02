@@ -394,7 +394,7 @@ function GmailTab({ vendors }: { vendors: any[] }) {
             Sign in with your joint Gmail to search vendor emails, view threads, and track all wedding communication in one place.
           </p>
           <button onClick={signIn} style={{
-            background:"#F5ECD7", color:"#0F1923", border:"none", borderRadius:10,
+            background:"#0f0f1a", color:"#0F1923", border:"none", borderRadius:10,
             padding:"12px 28px", cursor:"pointer", fontSize:14, fontWeight:700, fontFamily:"inherit",
             display:"inline-flex", alignItems:"center", gap:10,
           }}>
@@ -1148,7 +1148,7 @@ export default function WeddingPlanner() {
 
       {/* ── CINEMATIC HERO STRIP (overview only) ── */}
       {tab==="overview" && (
-        <div style={{position:"relative",height:260,overflow:"hidden",background:"#0f0f1a"}}>
+        <div style={{position:"relative",height:300,overflow:"hidden",background:"#0f0f1a"}}>
           {/* Keyframes injected inline */}
           <style>{`
             @keyframes filmroll {
@@ -1157,17 +1157,21 @@ export default function WeddingPlanner() {
             }
             .filmroll-inner {
               display: flex;
+              align-items: center;
               height: 100%;
-              animation: filmroll 28s linear infinite;
+              animation: filmroll 32s linear infinite;
               width: max-content;
+              gap: 4px;
             }
             .filmroll-inner img {
-              height: 260px;
-              width: 320px;
+              height: 300px;
+              width: auto;
+              max-width: 400px;
+              min-width: 180px;
               object-fit: cover;
               object-position: center top;
               flex-shrink: 0;
-              opacity: 0.85;
+              opacity: 0.88;
             }
           `}</style>
           <div className="filmroll-inner">
@@ -1297,14 +1301,14 @@ export default function WeddingPlanner() {
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12,marginBottom:20}}>
               {[
                 {label:"Total Paid (EUR)",  val:fmtEUR(totalPaidEur),              col:"#F59E0B"},
-                {label:"Total Paid (USD)",  val:fmtUSD(totalPaidUsd),              col:"#F5ECD7"},
-                {label:"Ajay's Family",     val:fmtEUR(ajayPaidEur),               col:"#1A7FC1", sub:fmtUSD(eurToUsd(ajayPaidEur,eurRate))},
-                {label:"Bianca's Family",   val:fmtEUR(biancaPaidEur),             col:"#8E44AD", sub:fmtUSD(eurToUsd(biancaPaidEur,eurRate))},
+                {label:"Total Paid (USD)",  val:fmtUSD(totalPaidUsd),              col:"#0f0f1a"},
+                {label:"Ajay's Family",     val:fmtEUR(ajayPaidEur),               col:"#1D4ED8", sub:fmtUSD(eurToUsd(ajayPaidEur,eurRate))},
+                {label:"Bianca's Family",   val:fmtEUR(biancaPaidEur),             col:"#7C3AED", sub:fmtUSD(eurToUsd(biancaPaidEur,eurRate))},
                 {label:"Budget Remaining",  val:"$"+((500000-totalPaidUsd)|0).toLocaleString(), col: totalPaidUsd>500000?"#EF4444":"#10B981"},
               ].map(s=>(
                 <div key={s.label} className="card" style={{padding:"14px 18px"}}>
                   <div style={{fontSize:9,color:"#6b7280",letterSpacing:1,textTransform:"uppercase"}}>{s.label}</div>
-                  <div style={{fontSize:20,fontWeight:700,color:s.col||"#F5ECD7",marginTop:3}}>{s.val}</div>
+                  <div style={{fontSize:20,fontWeight:700,color:s.col||"#0f0f1a",marginTop:3}}>{s.val}</div>
                   {s.sub&&<div style={{fontSize:10,color:"#6b7280",marginTop:2}}>{s.sub}</div>}
                 </div>
               ))}
@@ -1412,7 +1416,7 @@ export default function WeddingPlanner() {
             </div>
             <div style={{display:"flex",gap:7,flexWrap:"wrap",marginBottom:18}}>
               {events.map(ev=>(
-                <button key={ev.id} onClick={()=>setBudgetEvent(ev.id)} style={{background:budgetEvent===ev.id?ev.color:"#1C2A3A",color:budgetEvent===ev.id?"#fff":"#C9A96E",border:`1px solid ${budgetEvent===ev.id?ev.color:"#d1d5db"}`,padding:"6px 13px",borderRadius:99,cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:budgetEvent===ev.id?700:400}}>
+                <button key={ev.id} onClick={()=>setBudgetEvent(ev.id)} style={{background:budgetEvent===ev.id?ev.color:"#f4f4f8",color:budgetEvent===ev.id?"#fff":"#4a4a6a",border:`1px solid ${budgetEvent===ev.id?ev.color:"#e4e4ef"}`,padding:"6px 13px",borderRadius:99,cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:budgetEvent===ev.id?700:400}}>
                   {ev.emoji} {ev.label}
                 </button>
               ))}
@@ -1431,12 +1435,12 @@ export default function WeddingPlanner() {
                       {label:"Event Budget (USD)",val:"$"+bd.total.toLocaleString()},
                       {label:"Line Items Sum",val:"$"+itemsSum.toLocaleString(),col:itemsSum!==bd.total?"#F59E0B":"#10B981"},
                       {label:"Paid (EUR)",val:fmtEUR(totalSpentEur),col:"#F59E0B"},
-                      {label:"Paid (USD)",val:fmtUSD(totalSpentUsd),col:"#F59E0B"},
+                      {label:"Paid (USD)",val:fmtUSD(totalSpentUsd),col:"#B45309"},
                       {label:"Remaining",val:"$"+(bd.total-totalSpentUsd).toLocaleString(),col:bd.total-totalSpentUsd<0?"#EF4444":"#10B981"},
                     ].map(s=>(
                       <div key={s.label} className="card" style={{padding:"12px 16px"}}>
                         <div style={{fontSize:8,color:"#6b7280",letterSpacing:1,textTransform:"uppercase"}}>{s.label}</div>
-                        <div style={{fontSize:17,fontWeight:700,color:s.col||"#F5ECD7",marginTop:3}}>{s.val}</div>
+                        <div style={{fontSize:17,fontWeight:700,color:s.col||"#0f0f1a",marginTop:3}}>{s.val}</div>
                       </div>
                     ))}
                   </div>
@@ -1689,7 +1693,7 @@ export default function WeddingPlanner() {
               ].map(s=>(
                 <div key={s.label} className="card" style={{padding:"12px 16px"}}>
                   <div style={{fontSize:9,color:"#6b7280",textTransform:"uppercase",letterSpacing:1}}>{s.label}</div>
-                  <div style={{fontSize:22,fontWeight:700,color:s.col||"#F5ECD7",marginTop:3}}>{s.val}</div>
+                  <div style={{fontSize:22,fontWeight:700,color:s.col||"#0f0f1a",marginTop:3}}>{s.val}</div>
                 </div>
               ))}
             </div>
